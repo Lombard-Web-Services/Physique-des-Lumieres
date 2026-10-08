@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notions sur les Mouvements</title>
+    
+    <!-- Inclusion de MathJax pour l'affichage des formules LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 40px 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8em;
+            letter-spacing: 2px;
+            color: #1a252f;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            color: #1a252f;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        p {
+            text-align: justify;
+            margin-bottom: 15px;
+            text-indent: 20px;
+        }
+
+        /* Style pour les formules cliquables */
+        .formule {
+            text-align: center;
+            margin: 25px 0;
+            font-size: 1.2em;
+            background-color: #f4f6f7;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #bdc3c7;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .formule:hover {
+            background-color: #e8f4f8;
+            border-color: #00e5ff;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
+        }
+
+        .formule::after {
+            content: "⛶ Cliquer pour agrandir";
+            position: absolute;
+            bottom: -20px;
+            right: 10px;
+            font-size: 0.7em;
+            color: #888;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .formule:hover::after {
+            opacity: 1;
+        }
+
+        /* Style pour les mots en italique dans le texte original */
+        em {
+            font-style: italic;
+            color: #34495e;
+        }
+
+        /* Listes pour les lois */
+        ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        ol li {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        /* ============================================================ */
+        /* MODE PLEIN ÉCRAN POUR LES FORMULES */
+        /* ============================================================ */
+        .formula-fullscreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .formula-fullscreen.active {
+            display: flex;
+        }
+
+        .formula-fullscreen .formula-content {
+            color: #ffffff;
+            font-size: 4em;
+            text-align: center;
+            padding: 40px;
+            max-width: 90vw;
+            overflow-x: auto;
+            line-height: 1.4;
+        }
+
+        .formula-fullscreen .formula-content .MathJax {
+            color: #ffffff !important;
+            font-size: 1.2em !important;
+        }
+
+        .formula-fullscreen .close-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            color: #555;
+            font-size: 0.9em;
+            font-family: 'Segoe UI', sans-serif;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            body {
+                padding: 10px;
+            }
+            .formula-fullscreen .formula-content {
+                font-size: 2em;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Notions sur les Mouvements</h1>
+
+    <h2>1. Différents genres de mouvement.</h2>
+    <p>On a déjà vu que le <em>mouvement</em> est l’état d’un corps qui passe d’un lieu à un autre. Un mouvement est dit <em>rectiligne</em> ou <em>curviligne</em>, quand le chemin parcouru par le mobile est une ligne droite ou une ligne courbe, et chacun de ces mouvements peut être lui-même <em>uniforme</em> ou <em>varié</em>.</p>
+
+    <h2>2. Mouvement uniforme.</h2>
+    <p>Le <em>mouvement uniforme</em>, le plus simple de tous, est celui dans lequel un mobile parcourt des espaces égaux dans des temps égaux.</p>
+    <p>Toute force instantanée produit un mouvement rectiligne et uniforme, lorsque le mobile n’est soumis à aucune autre force et ne rencontre aucune résistance. En effet, la force n’agissant que pendant un temps très-court, le mobile, une fois abandonné à lui-même, conserve, en vertu de son inertie, la direction et la vitesse que la force lui a imprimées. Toutefois les forces continues peuvent aussi donner naissance à des mouvements uniformes. Il en est ainsi lorsqu’il se présente des résistances qui, se renouvelant sans cesse, détruisent l’accroissement de vitesse que ces forces tendent à communiquer au mobile. Par exemple, un convoi qui, sur un chemin de fer, est sollicité par une force continue, n’en prend pas moins un mouvement uniforme ; en effet, les pertes de force dues à la résistance de l’air et au frottement croissant avec la vitesse, il vient un moment où l’équilibre s’établit entre la force motrice et les résistances.</p>
+
+    <h2>3. Vitesse et loi du mouvement uniforme.</h2>
+    <p>Dans le mouvement uniforme, on nomme <em>vitesse</em> le chemin parcouru dans l’unité de temps. Cette unité, tout à fait arbitraire, est généralement la seconde. Il découle de la définition du mouvement uniforme que la vitesse est constante. Dans des temps deux, trois, quatre fois plus grands, les chemins parcourus sont donc doubles, triples, quadruples. Cette loi s’exprime en disant que <em>les espaces parcourus sont proportionnels aux temps</em>.</p>
+    <p>Cette loi peut se représenter par une formule très-simple. Pour cela, soient \(v\) la vitesse, \(t\) le temps, et \(e\) l’espace parcouru. Puisque \(v\) représente l’espace parcouru dans l’unité de temps, l’espace parcouru dans 2, 3... unités de temps, sera \(2v\), \(3v\)... ; et, enfin, dans le temps \(t\), il sera \(t\) fois \(v\) ; on a donc \(e = vt\).</p>
+
+    <div class="formule" onclick="showFullscreen('e = vt')">
+        \(e = vt\)
+    </div>
+
+    <p>On tire de cette formule, \(v = \frac{e}{t}\) ; d’où l’on peut dire que, dans le mouvement uniforme, la <em>vitesse est le rapport du chemin parcouru au temps employé à le parcourir</em>.</p>
+
+    <div class="formule" onclick="showFullscreen('v = \\frac{e}{t}')">
+        \(v = \frac{e}{t}\)
+    </div>
+
+    <h2>4. Mouvement varié.</h2>
+    <p>Le <em>mouvement varié</em> est celui dans lequel un mobile parcourt en temps égaux des espaces inégaux. Ce mouvement peut varier d’une infinité de manières ; le seul qu’il importe de considérer ici est le mouvement uniformément varié.</p>
+    <p>On nomme <em>mouvement uniformément varié</em>, celui dans lequel la vitesse croît ou décroît de quantités égales en temps égaux. Dans le premier cas, le mouvement est <em>uniformément accéléré</em> : tel est le mouvement d’un corps qui tombe, abstraction faite de la résistance de l’air. Dans le second, il est <em>uniformément retardé</em> : tel est le mouvement d’une pierre lancée verticalement de bas en haut.</p>
+    <p>Le mouvement uniformément varié a toujours pour cause une force continue constante, se comportant comme puissance ou comme résistance, suivant que le mouvement est accéléré ou retardé.</p>
+
+    <h2>5. Vitesse et lois du mouvement uniformément accéléré.</h2>
+    <p>Dans le mouvement uniformément accéléré, les espaces parcourus en temps égaux n’étant pas égaux, la vitesse n’est plus le chemin parcouru dans l’unité de temps, comme dans le mouvement uniforme. Ici on entend par <em>vitesse</em>, en un instant donné, l’espace qui, à partir de cet instant, serait uniformément parcouru par le mobile, dans chaque seconde, si la force accélératrice cessait tout à coup, c’est-à-dire si le mouvement devenait uniforme. Par exemple, si l’on dit d’un mobile qu’il a une vitesse de 60 mètres après 40 secondes d’un mouvement uniformément accéléré, on exprime que, si la force accélératrice qui a agi jusqu’alors cessait après 40 secondes, le mobile, en vertu de son inertie, continuerait à se mouvoir en parcourant uniformément 60 mètres par seconde.</p>
+    <p>Or, tout mouvement uniformément accéléré, quel que soit son accroissement de vitesse, est soumis aux deux lois suivantes :</p>
+    <ol>
+        <li><em>Les vitesses croissent proportionnellement aux temps.</em> C’est-à-dire qu’après un temps double, triple, quadruple, la vitesse acquise est deux, trois, quatre fois plus grande. Cette loi est la conséquence de la définition du mouvement uniformément varié.</li>
+        <li><em>Les espaces parcourus sont proportionnels aux carrés des temps employés à les parcourir.</em> C’est-à-dire que, si l’on représente par 4 le chemin parcouru en une seconde, les chemins parcourus en 2, 3, 4, 5... secondes, seront représentés par 4, 9, 16, 25..., carrés des premiers nombres.</li>
+    </ol>
+
+    <div class="formule" onclick="showFullscreen('v = a \\cdot t')">
+        \(v = a \cdot t\)
+    </div>
+
+    <div class="formule" onclick="showFullscreen('e = \\frac{1}{2} a \\cdot t^2')">
+        \(e = \frac{1}{2} a \cdot t^2\)
+    </div>
+
+    <h2>6. Proportionnalité des forces aux accélérations ; quantité de mouvement.</h2>
+    <p>On démontre, en mécanique rationnelle, que, lorsque plusieurs forces constantes F, F', F''..., agissent successivement sur un même corps, elles lui impriment, en temps égaux, des accélérations de vitesse G, G', G''..., proportionnelles à ces forces, c’est-à-dire qu’on a \(\frac{F}{F'} = \frac{G}{G'}\), \(\frac{F}{F''} = \frac{G}{G''}\)...</p>
+
+    <div class="formule" onclick="showFullscreen('\\frac{F}{F\'} = \\frac{G}{G\'}')">
+        \(\frac{F}{F'} = \frac{G}{G'}\)
+    </div>
+
+    <p>Ce principe permet donc de mesurer les forces par les accélérations de vitesse qu’elles communiquent aux mobiles, les forces étant estimées en kilogrammes et les vitesses en mètres ; de plus, comme des égalités ci-dessus on tire \(\frac{F}{G} = \frac{F'}{G'} = \frac{F''}{G''}\)..., on voit que, pour un même corps, le rapport entre la force qui le sollicite et l’accélération de vitesse qu’elle lui communique est constant, quelle que soit la force.</p>
+
+    <div class="formule" onclick="showFullscreen('\\frac{F}{G} = \\frac{F\'}{G\'} = \\frac{F\'\'}{G\'\'}')">
+        \(\frac{F}{G} = \frac{F'}{G'} = \frac{F''}{G''}\)
+    </div>
+
+    <p>C’est ce rapport constant que les mécaniciens ont adopté pour mesurer la <em>masse</em> des corps, et ils disent que <em>deux corps sont de même masse, quand, sollicités par des forces égales, ils prennent, dans le même temps, des accélérations de vitesse égales</em>.</p>
+    <p>En représentant par M et m les masses de deux corps, par F et f les forces qui agissent sur eux, par V et v les vitesses qu’elles leur communiquent dans le même temps, on a donc \(\frac{F}{V} = M\), et \(\frac{f}{v} = m\) ; ou \(F = MV\), et \(f = mv\). Divisant ces deux dernières égalités membre à membre, on a \(\frac{F}{f} = \frac{MV}{mv}\).</p>
+
+    <div class="formule" onclick="showFullscreen('\\frac{F}{V} = M \\quad \\text{et} \\quad \\frac{f}{v} = m')">
+        \(\frac{F}{V} = M \quad \text{et} \quad \frac{f}{v} = m\)
+    </div>
+
+    <div class="formule" onclick="showFullscreen('F = MV \\quad \\text{et} \\quad f = mv')">
+        \(F = MV \quad \text{et} \quad f = mv\)
+    </div>
+
+    <div class="formule" onclick="showFullscreen('\\frac{F}{f} = \\frac{MV}{mv}')">
+        \(\frac{F}{f} = \frac{MV}{mv}\)
+    </div>
+
+    <p>Le produit \(MV\) de la masse d’un corps par la vitesse dont il est animé, a reçu le nom de <em>quantité de mouvement</em> de ce corps. On peut donc énoncer la dernière égalité ci-dessus en disant que <em>deux forces quelconques sont entre elles comme les quantités de mouvement qu’elles impriment à deux masses différentes</em>. Par conséquent, si l’on prend pour unité de force celle qui imprimerait à l’unité de masse l’unité de vitesse dans l’unité de temps, on voit que les forces peuvent se mesurer par les quantités de mouvement qui leur correspondent.</p>
+    <p>Les forces étant proportionnelles aux quantités de mouvement, il en résulte que pour une même force le produit MV est constant ; c’est-à-dire que la masse devenant deux, trois fois plus grande, la vitesse est deux, trois fois plus petite. Ce résultat se déduit de la dernière égalité ci-dessus, en y faisant \(F = f\), ce qui donne \(MV = mv\), ou \(\frac{M}{m} = \frac{v}{V}\) ; c’est-à-dire que <em>les vitesses imprimées par une même force à deux masses inégales sont en raison inverse de ces masses</em>.</p>
+
+    <div class="formule" onclick="showFullscreen('MV = mv \\quad \\text{ou} \\quad \\frac{M}{m} = \\frac{v}{V}')">
+        \(MV = mv \quad \text{ou} \quad \frac{M}{m} = \frac{v}{V}\)
+    </div>
+
+    <p>Si \(V = v\), on a \(\frac{F}{f} = \frac{M}{m}\) ; c’est-à-dire que <em>deux forces sont entre elles comme les masses auxquelles elles impriment des vitesses égales</em>.</p>
+
+    <div class="formule" onclick="showFullscreen('\\frac{F}{f} = \\frac{M}{m}')">
+        \(\frac{F}{f} = \frac{M}{m}\)
+    </div>
+
+</div>
+
+<!-- Conteneur plein écran pour les formules -->
+<div class="formula-fullscreen" id="formulaFullscreen" onclick="hideFullscreen()">
+    <div class="formula-content" id="formulaFullscreenContent"></div>
+    <div class="close-hint">Cliquez n'importe où ou appuyez sur Échap pour fermer</div>
+</div>
+
+<script>
+    // ============================================================
+    // AFFICHAGE PLEIN ÉCRAN DES FORMULES
+    // ============================================================
+    function showFullscreen(latexFormula) {
+        const container = document.getElementById('formulaFullscreen');
+        const content = document.getElementById('formulaFullscreenContent');
+        
+        // Insérer la formule LaTeX
+        content.innerHTML = '\\(' + latexFormula + '\\)';
+        
+        // Afficher le conteneur
+        container.classList.add('active');
+        
+        // Forcer MathJax à retraiter le contenu
+        if (window.MathJax) {
+            MathJax.typesetPromise([content]).catch((err) => console.log(err));
+        }
+    }
+
+    function hideFullscreen() {
+        const container = document.getElementById('formulaFullscreen');
+        container.classList.remove('active');
+    }
+
+    // Fermer avec la touche Échap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideFullscreen();
+        }
+    });
+
+    // Empêcher la fermeture si on clique sur le contenu lui-même (optionnel)
+    document.getElementById('formulaFullscreenContent').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+</script>
+
+</body>
+</html>
