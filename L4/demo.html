@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notions sur les Mouvements - Leçon 4</title>
+    
+    <!-- MathJax pour l'affichage des formules LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Three.js et OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 40px 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2em;
+            letter-spacing: 3px;
+            color: #1a252f;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        h2 {
+            font-size: 1.4em;
+            color: #1a252f;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            border-left: 4px solid #00e5ff;
+            padding-left: 15px;
+        }
+
+        p {
+            text-align: justify;
+            margin-bottom: 15px;
+            text-indent: 20px;
+        }
+
+        em {
+            font-style: italic;
+            color: #34495e;
+        }
+
+        ol {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        ol li {
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        /* Styles pour les simulations 3D */
+        .sim-wrapper {
+            margin: 40px 0;
+        }
+
+        .sim-title {
+            text-align: center;
+            font-size: 1.3em;
+            color: #1a252f;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .sim-formula {
+            text-align: center;
+            font-size: 1.1em;
+            color: #00e5ff;
+            margin-bottom: 15px;
+        }
+
+        .sim-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            background: #0a0a0a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .sim-container canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: none;
+        }
+
+        /* Panneau de légende (gros texte) */
+        .legend-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 10, 0.85);
+            color: #e0e0e0;
+            padding: 20px 25px;
+            border-radius: 10px;
+            border-left: 5px solid #00e5ff;
+            z-index: 10;
+            max-width: 350px;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+        }
+
+        .legend-panel h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4em;
+            color: #00e5ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .legend-panel p {
+            margin: 0;
+            font-size: 1.05em;
+            text-indent: 0;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        /* Panneau de configuration (drag & drop) */
+        .panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 280px;
+            background: rgba(30, 30, 30, 0.95);
+            color: #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            cursor: grab;
+            user-select: none;
+            z-index: 10;
+            border: 1px solid #444;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9em;
+        }
+
+        .panel:active {
+            cursor: grabbing;
+        }
+
+        .panel h4 {
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+            color: #ffab00;
+            border-bottom: 1px solid #444;
+            padding-bottom: 8px;
+            text-align: center;
+        }
+
+        .panel label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .panel input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+            cursor: pointer;
+            accent-color: #00e5ff;
+        }
+
+        .panel .value-display {
+            color: #00e5ff;
+            font-weight: bold;
+        }
+
+        /* Boutons de contrôle */
+        .controls-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+        }
+
+        .ctrl-btn {
+            background: rgba(30, 30, 30, 0.9);
+            color: #00e5ff;
+            border: 1px solid #00e5ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+        }
+
+        .ctrl-btn:hover {
+            background: #00e5ff;
+            color: #0a0a0a;
+        }
+
+        /* Bouton plein écran */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.9);
+            color: #00e5ff;
+            border: 1px solid #00e5ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            z-index: 20;
+            transition: all 0.3s;
+        }
+
+        .fullscreen-btn:hover {
+            background: #00e5ff;
+            color: #0a0a0a;
+        }
+
+        .chart-caption {
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px; }
+            body { padding: 10px; }
+            .panel { width: 200px; font-size: 0.75em; bottom: 10px; left: 10px; }
+            .legend-panel { max-width: 200px; padding: 10px; }
+            .legend-panel h3 { font-size: 1em; }
+            .legend-panel p { font-size: 0.8em; }
+            h1 { font-size: 1.5em; }
+            .controls-panel { bottom: 10px; right: 10px; }
+            .ctrl-btn { padding: 8px 12px; font-size: 0.9em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Notions sur les Mouvements</h1>
+
+    <h2>4. Mouvement varié.</h2>
+    <p>Le <em>mouvement varié</em> est celui dans lequel un mobile parcourt en temps égaux des espaces inégaux. Ce mouvement peut varier d’une infinité de manières ; le seul qu’il importe de considérer ici est le mouvement uniformément varié.</p>
+    <p>On nomme <em>mouvement uniformément varié</em>, celui dans lequel la vitesse croît ou décroît de quantités égales en temps égaux. Dans le premier cas, le mouvement est <em>uniformément accéléré</em> : tel est le mouvement d’un corps qui tombe, abstraction faite de la résistance de l’air. Dans le second, il est <em>uniformément retardé</em> : tel est le mouvement d’une pierre lancée verticalement de bas en haut.</p>
+    <p>Le mouvement uniformément varié a toujours pour cause une force continue constante, se comportant comme puissance ou comme résistance, suivant que le mouvement est accéléré ou retardé.</p>
+
+    <!-- SIMULATION 1 : Mouvement uniformément varié -->
+    <div class="sim-wrapper">
+        <div class="sim-title">Mouvement Uniformément Varié</div>
+        <div class="sim-formula">\(x(t) = x_0 + v_0 t + \frac{1}{2} a t^2\)</div>
+        <div class="sim-container" id="sim-variation">
+            <button class="fullscreen-btn" onclick="toggleFullscreen('sim-variation')">⛶</button>
+            <div class="legend-panel">
+                <h3>Mouvement Varié</h3>
+                <p>La sphère bleue se déplace selon une <strong>accélération constante</strong>. Si \(a > 0\), le mouvement est accéléré. Si \(a < 0\), il est retardé.</p>
+            </div>
+            <div class="panel" id="panel-variation">
+                <h4>Configuration</h4>
+                <label>Accélération <span class="value-display" id="val-accel">2.0</span></label>
+                <input type="range" id="slider-accel" min="-5" max="5" step="0.1" value="2">
+                <label>Vitesse initiale <span class="value-display" id="val-v0">0.0</span></label>
+                <input type="range" id="slider-v0" min="-5" max="5" step="0.1" value="0">
+                <label>Position initiale <span class="value-display" id="val-x0">-5.0</span></label>
+                <input type="range" id="slider-x0" min="-8" max="0" step="0.1" value="-5">
+            </div>
+            <div class="controls-panel">
+                <button class="ctrl-btn" id="pause-variation" onclick="togglePause('variation')">⏸</button>
+                <button class="ctrl-btn" onclick="resetSim('variation')">⟲</button>
+            </div>
+        </div>
+        <p class="chart-caption">Figure 1 : Trajectoire 3D d'un mobile en mouvement uniformément varié. La traînée orange montre le chemin parcouru.</p>
+    </div>
+
+    <h2>5. Vitesse et lois du mouvement uniformément accéléré.</h2>
+    <p>Dans le mouvement uniformément accéléré, les espaces parcourus en temps égaux n’étant pas égaux, la vitesse n’est plus le chemin parcouru dans l’unité de temps, comme dans le mouvement uniforme. Ici on entend par <em>vitesse</em>, en un instant donné, l’espace qui, à partir de cet instant, serait uniformément parcouru par le mobile, dans chaque seconde, si la force accélératrice cessait tout à coup, c’est-à-dire si le mouvement devenait uniforme. Par exemple, si l’on dit d’un mobile qu’il a une vitesse de 60 mètres après 40 secondes d’un mouvement uniformément accéléré, on exprime que, si la force accélératrice qui a agi jusqu’alors cessait après 40 secondes, le mobile, en vertu de son inertie, continuerait à se mouvoir en parcourant uniformément 60 mètres par seconde.</p>
+    <p>Or, tout mouvement uniformément accéléré, quel que soit son accroissement de vitesse, est soumis aux deux lois suivantes :</p>
+    <ol>
+        <li><em>Les vitesses croissent proportionnellement aux temps.</em> C’est-à-dire qu’après un temps double, triple, quadruple, la vitesse acquise est deux, trois, quatre fois plus grande. Cette loi est la conséquence de la définition du mouvement uniformément varié.</li>
+        <li><em>Les espaces parcourus sont proportionnels aux carrés des temps employés à les parcourir.</em> C’est-à-dire que, si l’on représente par 4 le chemin parcouru en une seconde, les chemins parcourus en 2, 3, 4, 5... secondes, seront représentés par 4, 9, 16, 25..., carrés des premiers nombres.</li>
+    </ol>
+
+    <!-- SIMULATION 2 : Loi des vitesses -->
+    <div class="sim-wrapper">
+        <div class="sim-title">Loi des Vitesses</div>
+        <div class="sim-formula">\(v(t) = a \cdot t\)</div>
+        <div class="sim-container" id="sim-vitesse">
+            <button class="fullscreen-btn" onclick="toggleFullscreen('sim-vitesse')">⛶</button>
+            <div class="legend-panel">
+                <h3>Loi des Vitesses</h3>
+                <p>La vitesse croît <strong>proportionnellement au temps</strong>. La droite rouge montre que \(v\) est une fonction linéaire de \(t\). Plus l'accélération \(a\) est grande, plus la pente est raide.</p>
+            </div>
+            <div class="panel" id="panel-vitesse">
+                <h4>Configuration</h4>
+                <label>Accélération <span class="value-display" id="val-accel2">2.0</span></label>
+                <input type="range" id="slider-accel2" min="0.5" max="5" step="0.1" value="2">
+            </div>
+            <div class="controls-panel">
+                <button class="ctrl-btn" id="pause-vitesse" onclick="togglePause('vitesse')">⏸</button>
+                <button class="ctrl-btn" onclick="resetSim('vitesse')">⟲</button>
+            </div>
+        </div>
+        <p class="chart-caption">Figure 2 : Représentation 3D de la loi des vitesses. La sphère rouge se déplace le long de la droite \(v = a \cdot t\).</p>
+    </div>
+
+    <!-- SIMULATION 3 : Loi des espaces -->
+    <div class="sim-wrapper">
+        <div class="sim-title">Loi des Espaces</div>
+        <div class="sim-formula">\(e(t) = \frac{1}{2} a \cdot t^2\)</div>
+        <div class="sim-container" id="sim-espace">
+            <button class="fullscreen-btn" onclick="toggleFullscreen('sim-espace')">⛶</button>
+            <div class="legend-panel">
+                <h3>Loi des Espaces</h3>
+                <p>L'espace parcouru est <strong>proportionnel au carré du temps</strong>. La courbe orange est une <strong>parabole</strong> (loi quadratique). Le point rouge suit cette courbe.</p>
+            </div>
+            <div class="panel" id="panel-espace">
+                <h4>Configuration</h4>
+                <label>Accélération <span class="value-display" id="val-accel3">2.0</span></label>
+                <input type="range" id="slider-accel3" min="0.5" max="5" step="0.1" value="2">
+            </div>
+            <div class="controls-panel">
+                <button class="ctrl-btn" id="pause-espace" onclick="togglePause('espace')">⏸</button>
+                <button class="ctrl-btn" onclick="resetSim('espace')">⟲</button>
+            </div>
+        </div>
+        <p class="chart-caption">Figure 3 : Représentation 3D de la loi des espaces. La courbe orange illustre la croissance quadratique \(e \propto t^2\).</p>
+    </div>
+
+    <h2>6. Proportionnalité des forces aux accélérations ; quantité de mouvement.</h2>
+    <p>On démontre, en mécanique rationnelle, que, lorsque plusieurs forces constantes F, F', F''..., agissent successivement sur un même corps, elles lui impriment, en temps égaux, des accélérations de vitesse G, G', G''..., proportionnelles à ces forces, c’est-à-dire qu’on a \(\frac{F}{F'} = \frac{G}{G'}\), \(\frac{F}{F''} = \frac{G}{G''}\)...</p>
+    <p>Ce principe permet donc de mesurer les forces par les accélérations de vitesse qu’elles communiquent aux mobiles, les forces étant estimées en kilogrammes et les vitesses en mètres ; de plus, comme des égalités ci-dessus on tire \(\frac{F}{G} = \frac{F'}{G'} = \frac{F''}{G''}\)..., on voit que, pour un même corps, le rapport entre la force qui le sollicite et l’accélération de vitesse qu’elle lui communique est constant, quelle que soit la force.</p>
+    <p>C’est ce rapport constant que les mécaniciens ont adopté pour mesurer la <em>masse</em> des corps, et ils disent que <em>deux corps sont de même masse, quand, sollicités par des forces égales, ils prennent, dans le même temps, des accélérations de vitesse égales</em>.</p>
+    <p>En représentant par M et m les masses de deux corps, par F et f les forces qui agissent sur eux, par V et v les vitesses qu’elles leur communiquent dans le même temps, on a donc \(\frac{F}{V} = M\), et \(\frac{f}{v} = m\) ; ou \(F = MV\), et \(f = mv\). Divisant ces deux dernières égalités membre à membre, on a \(\frac{F}{f} = \frac{MV}{mv}\).</p>
+    <p>Le produit \(MV\) de la masse d’un corps par la vitesse dont il est animé, a reçu le nom de <em>quantité de mouvement</em> de ce corps. On peut donc énoncer la dernière égalité ci-dessus en disant que <em>deux forces quelconques sont entre elles comme les quantités de mouvement qu’elles impriment à deux masses différentes</em>. Par conséquent, si l’on prend pour unité de force celle qui imprimerait à l’unité de masse l’unité de vitesse dans l’unité de temps, on voit que les forces peuvent se mesurer par les quantités de mouvement qui leur correspondent.</p>
+    <p>Les forces étant proportionnelles aux quantités de mouvement, il en résulte que pour une même force le produit MV est constant ; c’est-à-dire que la masse devenant deux, trois fois plus grande, la vitesse est deux, trois fois plus petite. Ce résultat se déduit de la dernière égalité ci-dessus, en y faisant \(F = f\), ce qui donne \(MV = mv\), ou \(\frac{M}{m} = \frac{v}{V}\) ; c’est-à-dire que <em>les vitesses imprimées par une même force à deux masses inégales sont en raison inverse de ces masses</em>.</p>
+    <p>Si \(V = v\), on a \(\frac{F}{f} = \frac{M}{m}\) ; c’est-à-dire que <em>deux forces sont entre elles comme les masses auxquelles elles impriment des vitesses égales</em>.</p>
+
+    <!-- SIMULATION 4 : Quantité de mouvement -->
+    <div class="sim-wrapper">
+        <div class="sim-title">Quantité de Mouvement</div>
+        <div class="sim-formula">\(\vec{p} = M \cdot \vec{V}\)</div>
+        <div class="sim-container" id="sim-momentum">
+            <button class="fullscreen-btn" onclick="toggleFullscreen('sim-momentum')">⛶</button>
+            <div class="legend-panel">
+                <h3>Quantité de Mouvement</h3>
+                <p>Le vecteur violet représente \(\vec{p}\). Sa longueur est proportionnelle au produit de la <strong>masse</strong> par la <strong>vitesse</strong>. La sphère cyan se déplace dans l'espace, et le vecteur suit son mouvement.</p>
+            </div>
+            <div class="panel" id="panel-momentum">
+                <h4>Configuration</h4>
+                <label>Masse M <span class="value-display" id="val-masse">2.0</span></label>
+                <input type="range" id="slider-masse" min="0.5" max="5" step="0.1" value="2">
+                <label>Vitesse V <span class="value-display" id="val-vitesse">3.0</span></label>
+                <input type="range" id="slider-vitesse" min="0.5" max="5" step="0.1" value="3">
+            </div>
+            <div class="controls-panel">
+                <button class="ctrl-btn" id="pause-momentum" onclick="togglePause('momentum')">⏸</button>
+                <button class="ctrl-btn" onclick="resetSim('momentum')">⟲</button>
+            </div>
+        </div>
+        <p class="chart-caption">Figure 4 : Représentation 3D de la quantité de mouvement. La sphère cyan se déplace, et le vecteur violet \(\vec{p} = M\vec{V}\) suit son mouvement.</p>
+    </div>
+
+</div>
+
+<script>
+    // ============================================================
+    // VARIABLES GLOBALES POUR LES SIMULATIONS
+    // ============================================================
+    const simStates = {
+        variation: { paused: false, reset: false },
+        vitesse: { paused: false, reset: false },
+        espace: { paused: false, reset: false },
+        momentum: { paused: false, reset: false }
+    };
+
+    function togglePause(simName) {
+        simStates[simName].paused = !simStates[simName].paused;
+        const btn = document.getElementById('pause-' + simName);
+        if (btn) {
+            btn.textContent = simStates[simName].paused ? '▶' : '⏸';
+        }
+    }
+
+    function resetSim(simName) {
+        simStates[simName].reset = true;
+    }
+
+    // ============================================================
+    // GESTION DU PLEIN ÉCRAN
+    // ============================================================
+    function toggleFullscreen(containerId) {
+        const elem = document.getElementById(containerId);
+        if (!document.fullscreenElement) {
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    // ============================================================
+    // GESTION DES PANNEAUX DRAG & DROP
+    // ============================================================
+    function makeDraggable(panelId) {
+        const panel = document.getElementById(panelId);
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        panel.addEventListener('mousedown', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            isDragging = true;
+            offsetX = e.clientX - panel.getBoundingClientRect().left;
+            offsetY = e.clientY - panel.getBoundingClientRect().top;
+            panel.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const container = panel.parentElement;
+            const containerRect = container.getBoundingClientRect();
+            
+            let newLeft = e.clientX - containerRect.left - offsetX;
+            let newTop = e.clientY - containerRect.top - offsetY;
+            
+            newLeft = Math.max(0, Math.min(newLeft, container.clientWidth - panel.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, container.clientHeight - panel.offsetHeight));
+            
+            panel.style.left = newLeft + 'px';
+            panel.style.top = newTop + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            panel.style.cursor = 'grab';
+        });
+
+        panel.addEventListener('touchstart', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            const touch = e.touches[0];
+            isDragging = true;
+            offsetX = touch.clientX - panel.getBoundingClientRect().left;
+            offsetY = touch.clientY - panel.getBoundingClientRect().top;
+            e.preventDefault();
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const container = panel.parentElement;
+            const containerRect = container.getBoundingClientRect();
+            
+            let newLeft = touch.clientX - containerRect.left - offsetX;
+            let newTop = touch.clientY - containerRect.top - offsetY;
+            
+            newLeft = Math.max(0, Math.min(newLeft, container.clientWidth - panel.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, container.clientHeight - panel.offsetHeight));
+            
+            panel.style.left = newLeft + 'px';
+            panel.style.top = newTop + 'px';
+        });
+
+        document.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+    }
+
+    // ============================================================
+    // THREE.JS - SCÈNES 3D
+    // ============================================================
+    const scenes = {};
+
+    function createScene(containerId, bgColor) {
+        const container = document.getElementById(containerId);
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(bgColor);
+
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+        camera.position.set(8, 8, 15);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+        const backLight = new THREE.PointLight(0x00e5ff, 0.5, 20);
+        backLight.position.set(-5, -5, -5);
+        scene.add(backLight);
+
+        const gridHelper = new THREE.GridHelper(15, 30, 0x444444, 0x222222);
+        scene.add(gridHelper);
+
+        const axesHelper = new THREE.AxesHelper(8);
+        scene.add(axesHelper);
+
+        return { scene, camera, renderer, controls };
+    }
+
+    // ---------- SIMULATION 1 : MOUVEMENT VARIÉ ----------
+    function initVariationScene() {
+        const { scene, camera, renderer, controls } = createScene('sim-variation', 0x0a0a0a);
+        
+        const mobileGeo = new THREE.SphereGeometry(0.5, 32, 32);
+        const mobileMat = new THREE.MeshPhongMaterial({ color: 0x00e5ff, shininess: 100 });
+        const mobile = new THREE.Mesh(mobileGeo, mobileMat);
+        mobile.position.set(-5, 0.5, 0);
+        scene.add(mobile);
+
+        const trailPoints = [];
+        const trailGeo = new THREE.BufferGeometry();
+        const trailMat = new THREE.LineBasicMaterial({ color: 0xffab00 });
+        const trail = new THREE.Line(trailGeo, trailMat);
+        scene.add(trail);
+
+        let a = 2.0, v0 = 0.0, x0 = -5.0;
+        let t = 0;
+
+        document.getElementById('slider-accel').addEventListener('input', (e) => {
+            a = parseFloat(e.target.value);
+            document.getElementById('val-accel').textContent = a.toFixed(1);
+            resetSim('variation');
+        });
+        document.getElementById('slider-v0').addEventListener('input', (e) => {
+            v0 = parseFloat(e.target.value);
+            document.getElementById('val-v0').textContent = v0.toFixed(1);
+            resetSim('variation');
+        });
+        document.getElementById('slider-x0').addEventListener('input', (e) => {
+            x0 = parseFloat(e.target.value);
+            document.getElementById('val-x0').textContent = x0.toFixed(1);
+            resetSim('variation');
+        });
+
+        function reset() {
+            t = 0;
+            trailPoints.length = 0;
+            mobile.position.x = x0;
+            mobile.position.y = 0.5;
+            mobile.position.z = 0;
+            trail.geometry.setFromPoints(trailPoints);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (simStates.variation.reset) {
+                reset();
+                simStates.variation.reset = false;
+            }
+            
+            if (!simStates.variation.paused) {
+                t += 0.02;
+                
+                const x = x0 + v0 * t + 0.5 * a * t * t;
+                
+                mobile.position.x = x;
+                mobile.position.y = 0.5;
+                
+                if (t % 0.1 < 0.02) {
+                    trailPoints.push(new THREE.Vector3(x, 0.5, 0));
+                    if (trailPoints.length > 300) trailPoints.shift();
+                    trail.geometry.setFromPoints(trailPoints);
+                }
+
+                if (Math.abs(x) > 18) {
+                    reset();
+                }
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        scenes.variation = { scene, camera, renderer };
+    }
+
+    // ---------- SIMULATION 2 : LOI DES VITESSES ----------
+    function initVitesseScene() {
+        const { scene, camera, renderer, controls } = createScene('sim-vitesse', 0x0a0a0a);
+
+        // Ligne de la loi v = a*t (droite rouge)
+        const linePoints = [];
+        for (let i = 0; i <= 20; i++) {
+            const t = i / 2;
+            const v = 2 * t;
+            linePoints.push(new THREE.Vector3(t - 5, v, 0));
+        }
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xff4081, linewidth: 3 });
+        const line = new THREE.Line(lineGeo, lineMat);
+        scene.add(line);
+
+        // Sphère rouge qui se déplace le long de la droite
+        const dotGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const dotMat = new THREE.MeshPhongMaterial({ color: 0xff4081, emissive: 0x440011 });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        scene.add(dot);
+
+        // Axe vertical pour la vitesse
+        const vAxisGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-5, 0, 0),
+            new THREE.Vector3(-5, 10, 0)
+        ]);
+        const vAxisMat = new THREE.LineBasicMaterial({ color: 0x444444 });
+        const vAxis = new THREE.Line(vAxisGeo, vAxisMat);
+        scene.add(vAxis);
+
+        let a = 2.0;
+        let t = 0;
+
+        document.getElementById('slider-accel2').addEventListener('input', (e) => {
+            a = parseFloat(e.target.value);
+            document.getElementById('val-accel2').textContent = a.toFixed(1);
+            updateLine();
+            resetSim('vitesse');
+        });
+
+        function updateLine() {
+            const newPoints = [];
+            for (let i = 0; i <= 20; i++) {
+                const t = i / 2;
+                const v = a * t;
+                newPoints.push(new THREE.Vector3(t - 5, v, 0));
+            }
+            line.geometry.setFromPoints(newPoints);
+        }
+
+        function reset() {
+            t = 0;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (simStates.vitesse.reset) {
+                reset();
+                simStates.vitesse.reset = false;
+            }
+            
+            if (!simStates.vitesse.paused) {
+                t += 0.02;
+                if (t > 10) t = 0;
+                
+                const v = a * t;
+                
+                dot.position.set(t - 5, v, 0);
+                dot.rotation.y += 0.05;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        scenes.vitesse = { scene, camera, renderer };
+    }
+
+    // ---------- SIMULATION 3 : LOI DES ESPACES ----------
+    function initEspaceScene() {
+        const { scene, camera, renderer, controls } = createScene('sim-espace', 0x0a0a0a);
+
+        // Courbe de la loi e = 0.5 * a * t² (parabole orange)
+        const points = [];
+        for (let i = 0; i <= 100; i++) {
+            const t = i / 10;
+            const e = 0.5 * 2 * t * t;
+            points.push(new THREE.Vector3(t - 5, e * 0.3, 0));
+        }
+        const curveGeo = new THREE.BufferGeometry().setFromPoints(points);
+        const curveMat = new THREE.LineBasicMaterial({ color: 0xffab00, linewidth: 3 });
+        const curve = new THREE.Line(curveGeo, curveMat);
+        scene.add(curve);
+
+        // Point rouge sur la courbe
+        const dotGeo = new THREE.SphereGeometry(0.35, 16, 16);
+        const dotMat = new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0x660000 });
+        const dot = new THREE.Mesh(dotGeo, dotMat);
+        scene.add(dot);
+
+        // Axe vertical pour l'espace
+        const eAxisGeo = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-5, 0, 0),
+            new THREE.Vector3(-5, 10, 0)
+        ]);
+        const eAxisMat = new THREE.LineBasicMaterial({ color: 0x444444 });
+        const eAxis = new THREE.Line(eAxisGeo, eAxisMat);
+        scene.add(eAxis);
+
+        let a = 2.0;
+        let t = 0;
+
+        document.getElementById('slider-accel3').addEventListener('input', (e) => {
+            a = parseFloat(e.target.value);
+            document.getElementById('val-accel3').textContent = a.toFixed(1);
+            updateCurve();
+            resetSim('espace');
+        });
+
+        function updateCurve() {
+            const newPoints = [];
+            for (let i = 0; i <= 100; i++) {
+                const t = i / 10;
+                const e = 0.5 * a * t * t;
+                newPoints.push(new THREE.Vector3(t - 5, e * 0.3, 0));
+            }
+            curve.geometry.setFromPoints(newPoints);
+        }
+
+        function reset() {
+            t = 0;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (simStates.espace.reset) {
+                reset();
+                simStates.espace.reset = false;
+            }
+            
+            if (!simStates.espace.paused) {
+                t += 0.02;
+                if (t > 10) t = 0;
+                
+                const e = 0.5 * a * t * t;
+                
+                dot.position.set(t - 5, e * 0.3, 0);
+                dot.rotation.y += 0.05;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        scenes.espace = { scene, camera, renderer };
+    }
+
+    // ---------- SIMULATION 4 : QUANTITÉ DE MOUVEMENT ----------
+    function initMomentumScene() {
+        const { scene, camera, renderer, controls } = createScene('sim-momentum', 0x0a0a0a);
+
+        // Corps (sphère cyan) qui se déplace
+        const bodyGeo = new THREE.SphereGeometry(0.8, 32, 32);
+        const bodyMat = new THREE.MeshPhongMaterial({ color: 0x00e5ff, shininess: 100 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.set(-5, 0, 0);
+        scene.add(body);
+
+        // Vecteur quantité de mouvement (violet)
+        const pDir = new THREE.Vector3(1, 0, 0).normalize();
+        const pArrow = new THREE.ArrowHelper(pDir, body.position, 3, 0x9b59b6, 0.5, 0.3);
+        scene.add(pArrow);
+
+        let M = 2.0, V = 3.0;
+        let t = 0;
+
+        document.getElementById('slider-masse').addEventListener('input', (e) => {
+            M = parseFloat(e.target.value);
+            document.getElementById('val-masse').textContent = M.toFixed(1);
+            updateMomentum();
+        });
+        document.getElementById('slider-vitesse').addEventListener('input', (e) => {
+            V = parseFloat(e.target.value);
+            document.getElementById('val-vitesse').textContent = V.toFixed(1);
+            updateMomentum();
+        });
+
+        function updateMomentum() {
+            const p = M * V;
+            const newLength = Math.min(6, p * 0.5);
+            pArrow.setLength(newLength, 0.5, 0.3);
+            
+            const newScale = 0.5 + M * 0.2;
+            body.scale.set(newScale, newScale, newScale);
+        }
+
+        function reset() {
+            t = 0;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (simStates.momentum.reset) {
+                reset();
+                simStates.momentum.reset = false;
+            }
+            
+            if (!simStates.momentum.paused) {
+                t += 0.02;
+                
+                // Mouvement de va-et-vient de la sphère
+                const x = Math.sin(t * 0.5) * 5;
+                body.position.x = x;
+                
+                // Mettre à jour la position du vecteur
+                pArrow.position.copy(body.position);
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        scenes.momentum = { scene, camera, renderer };
+    }
+
+    // ============================================================
+    // GESTION DU REDIMENSIONNEMENT
+    // ============================================================
+    function handleResize() {
+        Object.values(scenes).forEach(sceneObj => {
+            if (sceneObj && sceneObj.renderer) {
+                const container = sceneObj.renderer.domElement.parentElement;
+                if (container) {
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+                    sceneObj.camera.aspect = width / height;
+                    sceneObj.camera.updateProjectionMatrix();
+                    sceneObj.renderer.setSize(width, height);
+                }
+            }
+        });
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    // ============================================================
+    // INITIALISATION
+    // ============================================================
+    window.onload = () => {
+        initVariationScene();
+        initVitesseScene();
+        initEspaceScene();
+        initMomentumScene();
+        
+        makeDraggable('panel-variation');
+        makeDraggable('panel-vitesse');
+        makeDraggable('panel-espace');
+        makeDraggable('panel-momentum');
+        
+        setTimeout(handleResize, 100);
+    };
+</script>
+
+</body>
+</html>
