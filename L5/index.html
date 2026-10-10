@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leçon : La Chaleur</title>
+    <!-- MathJax pour le rendu TeX -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --accent-color: #0d6efd;
+            --formula-bg: #e9ecef;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+
+        h1 {
+            font-size: 2.2em;
+            text-align: center;
+            border-bottom: none;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 1.6em;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            border-bottom: none;
+            color: var(--text-color);
+        }
+
+        p {
+            margin-bottom: 1em;
+            text-align: justify;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .formula-box {
+            background-color: var(--formula-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            position: relative;
+            font-size: 1.1em;
+        }
+
+        .formula-box:hover {
+            background-color: var(--card-bg);
+            border-color: var(--accent-color);
+        }
+
+        .formula-box::after {
+            content: "🔍 Cliquer pour agrandir";
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 0.65em;
+            opacity: 0.5;
+            color: var(--text-color);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            color: #ffffff;
+            font-size: 3em; /* Très gros texte */
+            text-align: center;
+            max-width: 95%;
+            overflow-x: auto;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-content .MathJax {
+            color: #ffffff !important;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 2em;
+            color: #ffffff;
+            background: none;
+            border: none;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .source {
+            font-size: 0.85em;
+            opacity: 0.7;
+            font-style: italic;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>LEÇON : LA CHALEUR</h1>
+
+        <h2>I. Introduction : L'Hypothèse Ondulatoire de la Chaleur</h2>
+        <p>La plupart des physiciens ont admis que la chaleur et la lumière sont dues à une même cause. Cette hypothèse s'accorde bien avec ce fait que, pour les rayons les plus réfrangibles du spectre, les propriétés lumineuses et les propriétés calorifiques sont inséparables. Elle n'est point infirmée par l'existence de rayons de chaleur sans lumière, car il n'est pas absurde de supposer que l'organe de la vue, s'il était constitué d'une manière un peu différente, pourrait être impressionné par ces rayons, comme il l'est par les rayons lumineux.</p>
+
+        <p>Les propriétés que présente la chaleur, dans son passage au travers des corps, ont porté des scientifiques dont Macedonio Melloni à faire sur la chaleur la même hypothèse que Newton a admise pour la lumière. De même que Newton admettait plusieurs espèces de lumière (rouge, orangé, jaune, vert, bleu, indigo, violet), Melloni a admis l'existence de plusieurs espèces de <strong>rayons calorifiques</strong> émis simultanément, en proportions variables, par les diverses sources de chaleur.</p>
+
+        <p>Ces rayons de chaleur sont doués de la propriété de traverser plus ou moins facilement les substances diathermanes. Celles-ci possèdent donc une véritable <strong>coloration calorifique</strong> : elles absorbent certains rayons de chaleur et laissent passer les autres. Melloni a donné le nom de <strong>thermocrose</strong> à cette propriété de la chaleur d'être composée de rayons calorifiques de différente espèce.</p>
+
+        <p><strong>Théorie ondulatoire :</strong> La théorie de Melloni s'explique, dans le système des ondulations, en admettant que les propriétés des différentes espèces de rayons calorifiques sont dues à des nombres de vibrations différents, ou à des ondes calorifiques d'inégale longueur.</p>
+
+        <h2>II. Les Pouvoirs Calorifiques : Absorbant, Émissif et Réflecteur</h2>
+
+        <h3>1. Définition du pouvoir absorbant</h3>
+        <p>Quand un faisceau de rayons calorifiques rencontre un corps, une portion de la chaleur est en général réfléchie, soit régulièrement, soit irrégulièrement ; une autre portion traverse le corps, s'il est diathermane ; une troisième portion est absorbée par le corps, et se manifeste par l'élévation de température ou les changements d'état qu'elle produit.</p>
+        <p>On appelle <strong>pouvoir absorbant</strong> d'un corps, pour un faisceau calorifique de nature déterminée, le rapport entre la quantité de chaleur absorbée et la quantité de chaleur incidente.</p>
+
+        <h3>2. Égalité des pouvoirs absorbant et émissif</h3>
+        <p>L'expérience des scientifiques Dulong et Petit a démontré l'égalité des pouvoirs absorbants et émissifs. L'égalité se démontre rigoureusement au moyen d'un appareil mesurant la vitesse de refroidissement dans le vide. Les pouvoirs émissif et absorbant étant égaux, toute cause qui modifie l'un modifie nécessairement l'autre dans le même sens. Quant au <strong>pouvoir réflecteur</strong>, puisqu'il marche dans un ordre inverse des deux autres, toute cause qui augmente ceux-ci le diminue, et réciproquement.</p>
+
+        <h3>3. Causes qui modifient les pouvoirs calorifiques</h3>
+        <p>Les différents pouvoirs varient d'une substance à une autre : ce sont les métaux qui ont le plus grand pouvoir réflecteur, et le noir de fumée le plus faible. Mais, pour un même corps, ces pouvoirs sont encore modifiés par 6 éléments :</p>
+        <ul>
+            <li>Le degré de poli,</li>
+            <li>La densité,</li>
+            <li>L'épaisseur de la substance rayonnante ou réfléchissante,</li>
+            <li>L'état physique de cette substance,</li>
+            <li>L'obliquité des rayons incidents ou émis,</li>
+            <li>La nature de la source de chaleur (obscure ou lumineuse).</li>
+        </ul>
+        <p><strong>Pouvoir réflecteur :</strong> On a longtemps admis que le pouvoir réflecteur croissait d'une manière générale avec le degré de poli des surfaces, et que les autres pouvoirs, au contraire, diminuaient. Mais Melloni a constaté qu'en rayant une plaque métallique polie, tantôt on diminuait son pouvoir réflecteur, tantôt on l'augmentait, phénomène que ce physicien a expliqué par le plus ou moins de densité que prend la plaque métallique réfléchissante.</p>
+        <p><strong>Pouvoir absorbant :</strong> Melloni a constaté que le pouvoir absorbant varie avec la nature de la source de chaleur. Le pouvoir absorbant varie avec l'inclinaison des rayons incidents. Il est à son maximum à l'incidence normale, et diminue à mesure que les rayons incidents s'écartent de la normale. C'est une des raisons pour lesquelles le sol s'échauffe plus l'été que l'hiver, car, l'été, les rayons solaires sont moins obliques. En un mot, toutes les causes qui modifient le pouvoir émissif modifient dans le même sens le pouvoir absorbant.</p>
+
+        <h3>4. Lois fondamentales de l'absorption</h3>
+        <p><strong>1° Pour les substances diathermanes</strong>, le pouvoir absorbant dépend à la fois de la nature de la substance et de celle de la source calorifique, et augmente avec l'épaisseur, mais seulement jusqu'à une certaine limite. — Ainsi, Melloni a constaté qu'un faisceau parallèle, émané d'une lampe, s'affaiblit beaucoup en traversant une première lame de verre L, de 12 millimètres d'épaisseur ; mais si, au sortir de cette lame, on le reçoit sur une seconde L', faite du même verre, il n'y perd plus que les 0,08 de sa chaleur, quelle qu'en soit l'épaisseur.</p>
+        <p>Ce résultat montre que la première lame, qui n'est diathermane que pour la chaleur lumineuse, arrête toute la chaleur obscure contenue dans le faisceau émis par la lampe ; le faisceau calorifique, après son passage au travers de cette lame, n'est donc plus formé que de chaleur lumineuse ; dès lors, la seconde L' ne lui fait plus éprouver que l'affaiblissement dû aux réflexions sur les deux surfaces, affaiblissement qui ne dépend pas de l'épaisseur de cette lame.</p>
+
+        <p><strong>2° Pour les corps athermanes</strong>, la valeur du pouvoir absorbant peut se déduire de celle des autres éléments connus. — En effet, la chaleur absorbée représente l'excès de la chaleur incidente sur la chaleur réfléchie et diffusée. Désignons par 1 la quantité de chaleur que la surface reçoit dans un temps déterminé ; par \(r\), \(d\), \(a\), les fractions de cette chaleur qu'elle réfléchit, diffuse et absorbe dans le même temps, c'est-à-dire ses pouvoirs réflecteur, diffusif et absorbant. On a évidemment \(r + d + a = 1\), d'où :</p>
+
+        <div class="formula-box" onclick="openModal('\\[ a = 1 - (r + d) \\]')">
+            \[ a = 1 - (r + d) \]
+        </div>
+
+        <p>Si l'on considère, en particulier, le noir de fumée bien mat, l'expérience a montré que les pouvoirs réflecteur et diffusif sont presque insensibles ; la quantité \(a\) est alors sensiblement égale à l'unité, c'est-à-dire que le noir de fumée absorbe à peu près intégralement toute espèce de chaleur incidente. Comme il est d'ailleurs le seul corps qui jouisse de cette propriété, on voit que, dans les expériences, il est indispensable de recouvrir de noir de fumée celle des faces de la pile qui doit recevoir la chaleur rayonnante.</p>
+
+        <p>Pour les métaux bien polis, la diffusion à la surface est négligeable ; on a donc sensiblement :</p>
+
+        <div class="formula-box" onclick="openModal('\\[ a = 1 - r \\]')">
+            \[ a = 1 - r \]
+        </div>
+
+        <p>en sorte que le pouvoir absorbant est complémentaire du pouvoir réflecteur.</p>
+
+        <p>Pour les surfaces mates, telles que le blanc de céruse, le papier, les métaux dépolis, etc., c'est au contraire le pouvoir réflecteur proprement dit qui doit être considéré comme nul, et l'on a :</p>
+
+        <div class="formula-box" onclick="openModal('\\[ a = 1 - d \\]')">
+            \[ a = 1 - d \]
+        </div>
+
+        <p>Enfin, pour les surfaces imparfaitement polies, qui réfléchissent une partie de la chaleur incidente et en diffusent une autre partie, le pouvoir absorbant est intermédiaire.</p>
+
+        <h2>III. Le Pouvoir Diathermane</h2>
+
+        <h3>1. Définition et causes de variation</h3>
+        <p>Le pouvoir diathermane est la propriété que possèdent certains corps de laisser passer la chaleur rayonnante. Les causes qui modifient le pouvoir diathermane sont au nombre de six, comme vu précédemment (nature, poli, épaisseur, nombre, nature des écrans déjà traversés, nature de la source).</p>
+
+        <h3>2. Influence du poli et de l'épaisseur</h3>
+        <p><strong>Influence du poli :</strong> Le pouvoir diathermane d'un écran augmente avec son degré de poli. Par exemple, Melloni a trouvé que les indications de son appareil variaient de 42 à 5 degrés, en interposant des écrans de verre de même nature et de même épaisseur, mais plus ou moins polis.</p>
+        <p><strong>Influence de l'épaisseur :</strong> La quantité de chaleur qui traverse un écran diathermane décroît quand l'épaisseur augmente ; mais l'absorption n'est pas proportionnelle à l'épaisseur. C'est dans les premières couches que l'absorption se fait. Au delà d'une certaine épaisseur, la quantité de chaleur transmise tend à rester constante, lors même que l'épaisseur continue à croître.</p>
+        <p>Melloni a constaté ce fait en expérimentant sur des plaques de verre blanc dont les épaisseurs étaient 1, 2, 3, 4, et il a trouvé que, sur 1000 rayons, ces plaques en laissaient passer respectivement 619, 576, 558, 549, nombres dont les différences tendent à devenir nulles.</p>
+
+        <h3>3. Influence du nombre d'écrans et de leur nature</h3>
+        <p>L'augmentation du nombre des écrans traversés par la chaleur produit un effet analogue à l'accroissement de l'épaisseur ; c'est-à-dire que l'absorption croît moins vite que le nombre des écrans, ou, en d'autres termes, que la quantité de chaleur absorbée décroît d'un écran au suivant. De plus, si plusieurs lames de même espèce sont superposées, elles arrêtent plus de chaleur qu'une seule plaque d'une épaisseur égale à la somme des épaisseurs. Enfin, l'effet produit par des plaques superposées, de différentes substances, est indépendant de l'ordre dans lequel elles se succèdent.</p>
+        <p>Les rayons calorifiques qui ont déjà traversé une ou plusieurs substances diathermanes subissent une modification qui les rend plus ou moins propres à être transmis au travers de nouvelles substances diathermanes. On conclut de là que la chaleur qui, dans la lampe d'Argand, a déjà traversé le verre, se transmet plus facilement au travers des autres substances. Le sel gemme seul laisse toujours passer la même quantité de chaleur incidente.</p>
+
+        <h3>4. Influence de la nature de la source</h3>
+        <p>La nature de la source de chaleur modifie beaucoup, en général, le pouvoir diathermane des corps. Dans diverses expériences, le sel gemme faisait la seule exception, que la proportion de chaleur transmise au travers des solides diminue avec la température de la source, et devient nulle pour une source à 400 degrés. Les liquides offrent le même phénomène.</p>
+
+        <h2>IV. Applications et Diffusion</h2>
+
+        <h3>1. Applications du pouvoir diathermane</h3>
+        <p>L'air est très-diathermane, puisque c'est dans ce fluide que se produisent tous les phénomènes de chaleur rayonnante. C'est à cause de son grand pouvoir diathermane que les couches supérieures de l'atmosphère sont toujours à une basse température, malgré les rayons solaires qui les traversent. L'eau étant peu diathermane, il se produit le phénomène contraire au sein des mers et des lacs. Les couches supérieures participent seules aux variations de température, suivant les saisons, tandis qu'à une certaine profondeur la température reste constante.</p>
+        <p>Les propriétés des corps diathermanes ont été utilisées pour séparer la lumière et la chaleur qui rayonnent ensemble d'une même source.</p>
+
+        <h3>2. Diffusion de la Chaleur</h3>
+        <p>Nous avons dit que la chaleur qui tombe sur la surface d'un corps ne se réfléchit pas totalement suivant les lois de la réflexion. Une partie se réfléchit irrégulièrement, c'est-à-dire dans toutes les directions autour du point d'incidence. C'est ce phénomène qu'on désigne sous le nom de <strong>diffusion</strong> ou de <strong>réflexion irrégulière</strong> de la chaleur, et l'on donne le nom de <strong>réflexion régulière</strong>, de <strong>réflexion spéculaire</strong>, à celle qui suit les lois citées.</p>
+        <p>La réflexion régulière ne se fait que sur des surfaces polies ; la réflexion irrégulière, au contraire, se produit sur les surfaces ternes ou rugueuses, comme des plaques de bois, de verre, de métal dépolies et mates.</p>
+        <p>Le pouvoir diffusif varie selon la nature de la source et celle des substances réfléchissantes. Les corps blancs sont très-dispersifs pour la chaleur qui rayonne d'une source incandescente. Les métaux mats sont encore plus dispersifs que les corps blancs.</p>
+
+        <h2>V. Synthèse Moderne : Flux vs Énergie</h2>
+
+        <h3>1. Thèse centrale</h3>
+        <p>La chaleur rayonnante n'est pas une grandeur primitive mais une <strong>manifestation électromagnétique du flux énergétique</strong> obéissant intrinsèquement à la loi inverse carrée. Les instruments de Melloni mesurent le flux \(\Phi\) [W/m²], pas l'énergie interne \(Q\) [J].</p>
+
+        <h3>2. Découverte fondamentale</h3>
+        <p>On constate que la "chaleur" telle que mesurée par les instruments historiques est déjà "contaminée" par la géométrie de l'espace (loi en \(1/r^2\)) via son expression électromagnétique. Cela suggère une origine commune entre :</p>
+        <ul>
+            <li>Gravitation newtonienne :</li>
+        </ul>
+        <div class="formula-box" onclick="openModal('\\[ F \\propto \\frac{1}{r^2} \\]')">
+            \[ F \propto \frac{1}{r^2} \]
+        </div>
+        <ul>
+            <li>Électromagnétisme :</li>
+        </ul>
+        <div class="formula-box" onclick="openModal('\\[ E \\propto \\frac{1}{r^2} \\]')">
+            \[ E \propto \frac{1}{r^2} \]
+        </div>
+        <ul>
+            <li>Rayonnement thermique :</li>
+        </ul>
+        <div class="formula-box" onclick="openModal('\\[ \\Phi \\propto \\frac{1}{r^2} \\]')">
+            \[ \Phi \propto \frac{1}{r^2} \]
+        </div>
+
+        <h3>3. L'Unité Fondamentale : Le Flux vs L'Énergie</h3>
+        <p><strong>Distinction cruciale révélée par Melloni et les autres scientifiques de cette époque :</strong></p>
+        <ul>
+            <li><strong>Énergie thermique \(Q\) [J] :</strong> Invariante, conservée, indépendante de \(r\).</li>
+            <li><strong>Flux thermique \(\Phi\) [W/m²] :</strong> Dépend de la géométrie, suit \(1/r^2\).</li>
+        </ul>
+        <p>Les instruments de Melloni mesurent \(\Phi\), pas \(Q\). La "chaleur" détectée est donc intrinsèquement une mesure de <em>densité de flux</em>, pas de température absolue.</p>
+
+        <p><strong>Relation complète flux-température :</strong></p>
+
+        <div class="formula-box" onclick="openModal('\\[ \\Phi = \\sigma T^4 \\cdot \\frac{R^2}{r^2} \\cdot e \\cdot \\tau_{atm} \\]')">
+            \[ \Phi = \sigma T^4 \cdot \frac{R^2}{r^2} \cdot e \cdot \tau_{atm} \]
+        </div>
+        <p class="source">Où \(R\) = rayon de la source, \(e\) = émissivité, \(\tau_{atm}\) = transmission atmosphérique.<br>
+        Source : Modis, Y. &amp; Salusbury, T. (2006). History of the Planck Radiation Law. London: Imperial College Press.</p>
+
+        <h3>4. Applications Modernes</h3>
+        <p>Nous retrouvons maintenant dans la physique moderne leurs applications.</p>
+        <p><strong>En Science fondamentale :</strong></p>
+        <ul>
+            <li>Détection de exoplanètes (transit + IR)</li>
+            <li>Imagerie thermique médicale</li>
+            <li>Spectroscopie IR des molécules</li>
+            <li>Détection de neutrinos (effet thermique)</li>
+        </ul>
+        <p><strong>Dans les Applications industrielles :</strong></p>
+        <ul>
+            <li>Contrôle qualité thermique</li>
+            <li>Isolation thermique des bâtiments</li>
+            <li>Conversion thermophotovoltaïque</li>
+            <li>Refroidissement radiatif nocturne</li>
+        </ul>
+
+    </div>
+
+    <!-- Modal pour l'affichage plein écran -->
+    <div id="formula-modal" class="modal-overlay" onclick="closeModal()">
+        <button class="close-btn" onclick="closeModal()">✕</button>
+        <div class="modal-content" id="modal-formula-content">
+            <!-- Le contenu TeX sera injecté ici -->
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la Modal
+        const modal = document.getElementById('formula-modal');
+        const modalContent = document.getElementById('modal-formula-content');
+
+        function openModal(texFormula) {
+            modalContent.innerHTML = texFormula;
+            modal.classList.add('active');
+            
+            // Re-render MathJax pour le nouveau contenu
+            if (window.MathJax) {
+                MathJax.typesetPromise([modalContent]).catch((err) => console.log(err));
+            }
+            
+            // Empêcher le défilement du body
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            modalContent.innerHTML = '';
+            document.body.style.overflow = '';
+        }
+
+        // Fermer avec la touche Echap
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
