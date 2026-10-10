@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Chaleur Spécifique - Cours Interactif</title>
+    
+    <!-- MathJax pour les équations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Three.js et OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --accent-color: #e67e22;
+            --accent-hover: #d35400;
+            --canvas-bg: #000000;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --card-bg: #1e1e1e;
+            --accent-color: #f39c12;
+            --accent-hover: #e67e22;
+            --canvas-bg: #000000;
+            --shadow: 0 4px 6px rgba(0,0,0,0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-color);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            padding: 0 20px 40px 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Styles pour les équations cliquables */
+        .eq-clickable {
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+            background-color: rgba(230, 126, 34, 0.1);
+            border-bottom: 2px dashed var(--accent-color);
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        
+        .eq-clickable:hover {
+            background-color: rgba(230, 126, 34, 0.3);
+        }
+
+        /* Modal pour afficher l'équation en grand */
+        #eq-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: black;
+            color: white;
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #eq-modal .close-btn {
+            position: absolute;
+            top: 20px; right: 30px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            background: none; border: none;
+        }
+
+        #eq-modal .eq-content {
+            font-size: 3rem;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            max-width: 90%;
+        }
+
+        /* Conteneur principal de la scène */
+        .scene-container {
+            position: relative;
+            width: 100%;
+            height: 600px; 
+            background-color: var(--canvas-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border: 2px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Zone Canvas */
+        .canvas-area {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+        }
+
+        .canvas-area canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Panneau supérieur (Titre + Légende) */
+        .scene-top-panel {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), rgba(0,0,0,0));
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .scene-top-panel > * {
+            pointer-events: auto;
+        }
+
+        .scene-title {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .scene-title h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .scene-title p {
+            margin: 5px 0 0 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .scene-legend {
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .scene-legend span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid #fff;
+        }
+
+        /* Panneau inférieur (Paramètres) */
+        .scene-bottom-panel {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .scene-controls {
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .scene-controls label {
+            display: flex;
+            flex-direction: column;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #eee;
+        }
+
+        .scene-controls input[type="range"] {
+            width: 180px;
+            margin-top: 8px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+        }
+
+        .scene-controls .badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #222;
+            color: #fff;
+            font-family: monospace;
+            border: 1px solid var(--accent-color);
+            min-width: 150px;
+            text-align: center;
+        }
+
+        /* Bouton plein écran */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 20;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .fullscreen-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Mode plein écran */
+        .scene-container:fullscreen {
+            height: 100vh;
+            width: 100vw;
+            border-radius: 0;
+            border: none;
+        }
+        
+        .scene-container:-webkit-full-screen {
+            height: 100vh;
+            width: 100vw;
+            border-radius: 0;
+            border: none;
+        }
+
+        /* Formule mise en valeur */
+        .formula-highlight {
+            background: linear-gradient(135deg, rgba(230, 126, 34, 0.15), rgba(230, 126, 34, 0.05));
+            border-left: 4px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .formula-highlight:hover {
+            transform: scale(1.02);
+        }
+        .formula-highlight .formula {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+        .formula-highlight .legend {
+            font-size: 0.95rem;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        /* Loi mise en valeur sur fond noir */
+        .law-highlight {
+            background: #000000;
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid var(--accent-color);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .law-highlight:hover {
+            transform: scale(1.02);
+        }
+        .law-highlight strong {
+            color: var(--accent-color);
+        }
+
+        /* Dark mode toggle */
+        #theme-toggle {
+            background: none;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        #theme-toggle:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Tableau */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        th {
+            background-color: rgba(230, 126, 34, 0.1);
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌡️ La Chaleur Spécifique</h1>
+        <button id="theme-toggle">🌙 Mode Sombre</button>
+    </header>
+
+    <div class="container">
+        
+        <!-- SECTION : OBJET DE LA CALORIMÉTRIE -->
+        <div class="card">
+            <h2>L'objet de la calorimétrie</h2>
+            <p>
+                L'objet de la calorimétrie est de mesurer la quantité de chaleur que les corps cèdent ou absorbent 
+                lorsque leur température s'abaisse ou s'élève au nombre de degrés connu, ou lorsqu'ils changent d'état.
+            </p>
+            <p>
+                On ne peut mesurer la quantité absolue de chaleur perdue ou gagnée par un corps, mais seulement 
+                la quantité relative, c'est-à-dire le rapport entre la quantité absolue perdue ou gagnée par le corps 
+                et celle que perd ou absorbe un autre corps pour produire le même effet.
+            </p>
+            <p>
+                Le corps que l'on a choisi pour terme de comparaison est l'eau, et l'on est convenu de prendre 
+                pour unité de chaleur, ou <strong>calorie</strong>, la quantité de chaleur nécessaire pour élever 
+                de 0 à 1 la température d'un kilogramme d'eau.
+            </p>
+        </div>
+
+        <!-- SECTION : LA CHALEUR SPÉCIFIQUE -->
+        <div class="card">
+            <h2>La chaleur spécifique</h2>
+            <p>
+                On appelle <strong>chaleur spécifique</strong>, ou <strong>capacité calorifique</strong> d'un corps, 
+                la quantité de chaleur qu'il absorbe lorsque sa température s'élève de 0 à 1 degré, comparativement 
+                à celle qu'absorbe, dans le même cas, un égal poids d'eau.
+            </p>
+            <p>
+                C'est-à-dire que, de même qu'on a choisi pour unité des densités la densité de l'eau, on prend 
+                pour unité des chaleurs spécifiques la chaleur spécifique du même liquide ; d'où il résulte que 
+                les nombres qui représentent les chaleurs spécifiques, ainsi que ceux qui représentent les densités, 
+                ne sont autre chose que des <strong>rapports</strong>.
+            </p>
+            <p>
+                On constate rapidement que tous les corps n'ont pas les mêmes chaleurs spécifiques.
+            </p>
+        </div>
+
+        <!-- Section 1: Introduction générale -->
+        <div class="card">
+            <h2>1. Qu'est-ce que la chaleur spécifique ?</h2>
+            <p>
+                La chaleur spécifique est la quantité de chaleur qu’il faut fournir à <strong>1 kg</strong> d’une substance pour augmenter sa température de <strong>1 °C</strong> (ou 1 K).
+            </p>
+            <p>
+                Prenons 1 kg d’eau. La chaleur spécifique de l’eau est d’environ :
+            </p>
+            <p style="text-align:center; font-size: 1.5rem;">
+                <span class="eq-clickable" onclick="showEq('c = 4180 \\text{ J/(kg·°C)}')">
+                    \( c = 4180\ \text{J/(kg·°C)} \)
+                </span>
+            </p>
+            <p>
+                Cela signifie qu’il faut fournir environ 4 180 joules à 1 kg d’eau pour faire passer sa température de :
+                <span class="eq-clickable" onclick="showEq('20°C \\rightarrow 21°C')">\( 20°C \rightarrow 21°C \)</span>.
+            </p>
+        </div>
+
+        <!-- Section 2: La formule -->
+        <div class="card">
+            <h2>2. La formule fondamentale</h2>
+            <p>
+                Si on veut chauffer 2 kg d’eau de 20 °C à 30 °C, on utilise l'équation principale :
+            </p>
+            <p style="text-align:center; font-size: 2rem;">
+                <span class="eq-clickable" onclick="showEq('Q = m \\, c \\, \\Delta T')">
+                    \( Q = m \, c \, \Delta T \)
+                </span>
+            </p>
+            <p><strong>avec :</strong></p>
+            <ul>
+                <li><span class="eq-clickable" onclick="showEq('Q')">\( Q \)</span> = <strong>énergie thermique</strong> transférée, en joules (J)</li>
+                <li><span class="eq-clickable" onclick="showEq('m')">\( m \)</span> = masse, en kg</li>
+                <li><span class="eq-clickable" onclick="showEq('c')">\( c \)</span> = chaleur spécifique, en J/(kg·°C)</li>
+                <li><span class="eq-clickable" onclick="showEq('\\Delta T')">\( \Delta T \)</span> = variation de température, en °C</li>
+            </ul>
+            <p>Donc, pour notre exemple :</p>
+            <p style="text-align:center;">
+                <span class="eq-clickable" onclick="showEq('Q = 2 \\times 4180 \\times 10')">\( Q = 2 \times 4180 \times 10 \)</span><br>
+                <span class="eq-clickable" onclick="showEq('Q = 83\\,600\\ J')">\( Q = 83\,600\ J \)</span>
+            </p>
+        </div>
+
+        <!-- Section 2bis: La formule originale m(t' - t)c -->
+        <div class="card">
+            <h2>2 bis. La formule originale : \( m(t' - t)c \)</h2>
+            <p>
+                Dans le texte original, la formule est présentée sous une forme plus explicite qui distingue 
+                le <strong>chauffage</strong> du <strong>refroidissement</strong>.
+            </p>
+            
+            <div class="formula-highlight" onclick="showEq('Q = m(t\' - t)c')">
+                <div class="formula">
+                    \( Q = m(t' - t)c \)
+                </div>
+                <div class="legend">
+                    <strong>Chauffage</strong> : le corps s'échauffe de \( t \) à \( t' \) degrés (\( t' > t \)).
+                </div>
+            </div>
+
+            <div class="formula-highlight" style="border-left-color: #3498db;" onclick="showEq('Q = m(t - t\')c')">
+                <div class="formula" style="color: #3498db;">
+                    \( Q = m(t - t')c \)
+                </div>
+                <div class="legend">
+                    <strong>Refroidissement</strong> : le corps se refroidit de \( t \) à \( t' \) degrés (\( t < t' \)).
+                </div>
+            </div>
+
+            <p>
+                Ces deux formules sont équivalentes à \( Q = m \cdot c \cdot \Delta T \), où \( \Delta T \) est 
+                la <strong>valeur absolue</strong> de la variation de température.
+            </p>
+            <p>
+                La différence entre les deux formes réside dans le <strong>signe</strong> de \( Q \) :
+            </p>
+            <ul>
+                <li>En <strong>chauffage</strong>, \( Q > 0 \) : le corps <strong>absorbe</strong> de l'énergie.</li>
+                <li>En <strong>refroidissement</strong>, \( Q < 0 \) : le corps <strong>cède</strong> de l'énergie.</li>
+            </ul>
+        </div>
+
+        <!-- Section 3: Visualisation 1 - La formule -->
+        <div class="card">
+            <h2>3. Visualisation interactive : L'équation</h2>
+            <div class="scene-container" id="scene1-container">
+                <div class="canvas-area" id="canvas1-area"></div>
+                <div class="scene-top-panel">
+                    <div class="scene-title">
+                        <h3>L'équation \( Q = m c \Delta T \)</h3>
+                        <p>Les barres représentent la Masse (bleu), la Variation de Température (rouge) et l'Énergie (jaune).</p>
+                    </div>
+                    <div class="scene-legend">
+                        <span><div class="color-box" style="background:#3498db;"></div> Masse (m)</span>
+                        <span><div class="color-box" style="background:#e74c3c;"></div> Delta T (\(\Delta T\))</span>
+                        <span><div class="color-box" style="background:#f1c40f;"></div> Énergie (Q)</span>
+                    </div>
+                </div>
+                <div class="scene-bottom-panel">
+                    <div class="scene-controls">
+                        <label>Masse (kg): <input type="range" id="mass1" min="1" max="5" value="2" step="0.5"></label>
+                        <label>Delta T (°C): <input type="range" id="dt1" min="1" max="50" value="10" step="1"></label>
+                        <span id="val1" class="badge">Q = 83600 J</span>
+                    </div>
+                </div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen('scene1-container')">⛶ Plein Écran</button>
+            </div>
+        </div>
+
+        <!-- Section 4: Pourquoi chaque matériau est différent -->
+        <div class="card">
+            <h2>4. Pourquoi chaque matériau a une chaleur spécifique différente ?</h2>
+            <p>
+                Parce que les matériaux n'emmagasinent pas la chaleur de la même manière. Voici quelques exemples :
+            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Substance</th>
+                        <th>Chaleur spécifique approximative</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Eau</td><td>4180 J/(kg·°C)</td></tr>
+                    <tr><td>Aluminium</td><td>900 J/(kg·°C)</td></tr>
+                    <tr><td>Fer</td><td>450 J/(kg·°C)</td></tr>
+                    <tr><td>Cuivre</td><td>385 J/(kg·°C)</td></tr>
+                </tbody>
+            </table>
+            <p>
+                Ainsi, l'eau possède une chaleur spécifique élevée : il faut beaucoup d'énergie pour augmenter sa température.
+            </p>
+            <p>
+                À masse égale, un morceau de cuivre chauffera donc beaucoup plus rapidement qu'une même masse d'eau pour une même quantité d'énergie reçue.
+            </p>
+        </div>
+
+        <!-- Section 5: Visualisation 2 - L'échauffement -->
+        <div class="card">
+            <h2>5. Visualisation interactive : L'échauffement de l'eau</h2>
+            <div class="scene-container" id="scene2-container">
+                <div class="canvas-area" id="canvas2-area"></div>
+                <div class="scene-top-panel">
+                    <div class="scene-title">
+                        <h3>Échauffement de 1 kg d'eau</h3>
+                        <p>L'eau change d'état visuel : <strong>Solide (Glace)</strong> &lt; 0°C, <strong>Liquide</strong> 0-100°C, <strong>Gaz</strong> &gt; 100°C.</p>
+                    </div>
+                    <div class="scene-legend">
+                        <span><div class="color-box" style="background:#3498db;"></div> Eau Liquide</span>
+                        <span><div class="color-box" style="background:#aaddff;"></div> Glace</span>
+                        <span><div class="color-box" style="background:#eeeeee;"></div> Vapeur</span>
+                        <span><div class="color-box" style="background:#e74c3c;"></div> Température</span>
+                    </div>
+                </div>
+                <div class="scene-bottom-panel">
+                    <div class="scene-controls">
+                        <label>Énergie fournie (J): <input type="range" id="heat2" min="0" max="500000" value="0" step="1000"></label>
+                        <span id="val2" class="badge">Température: 20°C</span>
+                    </div>
+                </div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen('scene2-container')">⛶ Plein Écran</button>
+            </div>
+        </div>
+
+        <!-- Section 6: Visualisation 3 - Comparaison (CORRIGÉE) -->
+        <div class="card">
+            <h2>6. Visualisation interactive : Comparaison des matériaux</h2>
+            <p>
+                Cette visualisation compare l'échauffement de 1 kg de différents matériaux pour une même quantité d'énergie fournie.
+                La hauteur des barres représente la <strong>température finale</strong> atteinte par chaque matériau.
+                Plus la barre est haute, plus le matériau chauffe vite (car sa chaleur spécifique est basse).
+            </p>
+            <div class="scene-container" id="scene3-container">
+                <div class="canvas-area" id="canvas3-area"></div>
+                <div class="scene-top-panel">
+                    <div class="scene-title">
+                        <h3>Comparaison des matériaux (1 kg)</h3>
+                        <p>La hauteur représente la température finale. La couleur indique la température (Bleu = froid, Rouge = chaud).</p>
+                    </div>
+                    <div class="scene-legend">
+                        <span><div class="color-box" style="background:#3498db;"></div> Eau (4180 J/kg°C)</span>
+                        <span><div class="color-box" style="background:#95a5a6;"></div> Alu (900 J/kg°C)</span>
+                        <span><div class="color-box" style="background:#7f8c8d;"></div> Fer (450 J/kg°C)</span>
+                        <span><div class="color-box" style="background:#e67e22;"></div> Cuivre (385 J/kg°C)</span>
+                    </div>
+                </div>
+                <div class="scene-bottom-panel">
+                    <div class="scene-controls">
+                        <label>Énergie fournie (J): <input type="range" id="heat3" min="0" max="200000" value="110000" step="5000"></label>
+                        <span id="val3" class="badge">Énergie: 110 000 J</span>
+                    </div>
+                </div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen('scene3-container')">⛶ Plein Écran</button>
+            </div>
+        </div>
+
+        <!-- Section 7: Attention à ne pas confondre -->
+        <div class="card">
+            <h2>7. ⚠️ À ne pas confondre avec la « quantité de chaleur »</h2>
+            <p>
+                La chaleur spécifique <span class="eq-clickable" onclick="showEq('c')">\( c \)</span> est une propriété du matériau.
+            </p>
+            <p>
+                L'énergie thermique <span class="eq-clickable" onclick="showEq('Q')">\( Q \)</span> dépend, elle, de trois choses :
+            </p>
+            <p style="text-align:center; font-size: 1.5rem;">
+                <span class="eq-clickable" onclick="showEq('Q = m c \\Delta T')">\( Q = m c \Delta T \)</span>
+            </p>
+            <p>
+                Donc si tu doubles la masse, tu doubles l'énergie nécessaire ; si tu doubles l'élévation de température, tu la doubles également.
+            </p>
+            <hr style="border-color: #444; margin: 20px 0;">
+            <p style="font-size: 1.2rem; font-weight: bold; text-align: center;">
+                En une phrase : La chaleur spécifique mesure la capacité d'une matière à absorber de l'énergie thermique sans que sa température augmente beaucoup.
+            </p>
+            <p>
+                C'est notamment pour cela que l'eau joue un rôle important dans la régulation thermique : elle peut absorber beaucoup d'énergie avant que sa température ne s'élève fortement.
+            </p>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- AJOUTS DEMANDÉS À LA SUITE -->
+        <!-- ============================================================ -->
+
+        <!-- SECTION 8 : MESURE DE LA CHALEUR LATENTE DE FUSION -->
+        <div class="card">
+            <h2>8. Mesure de la chaleur latente de fusion</h2>
+            <p>
+                Sachant que, lorsque les corps passent de l'état solide à l'état liquide, il y a absorption 
+                d'une quantité de chaleur latente plus ou moins considérable, on appelle <strong>chaleur de fusion</strong> 
+                d'un corps solide, le nombre de calories qu'absorbe 1 kilogramme de ce corps pour passer, 
+                <strong>sans élévation de température</strong>, de l'état solide à l'état liquide.
+            </p>
+            <p>
+                La chaleur de fusion des corps se détermine par la <strong>méthode des mélanges</strong> en s'appuyant 
+                sur ce principe, qui paraît évident, que, lorsqu'un corps à l'état liquide se solidifie, il dégage 
+                une quantité de chaleur rigoureusement égale à celle qu'il avait absorbée pendant la fusion.
+            </p>
+            <p>
+                Soit proposé, par exemple, de déterminer la chaleur de fusion du plomb. On fond un poids \( M \) 
+                de ce corps, et, après en avoir pris la température \( T \), on le verse dans une masse d'eau 
+                dont on connaît le poids \( m \) et la température \( t \). Cela posé, représentons par \( c \) 
+                la chaleur spécifique du plomb, par \( x \) sa chaleur de fusion, c'est-à-dire la quantité de 
+                chaleur latente absorbée par l'unité de poids en se fondant, ou, ce qui est la même chose, 
+                celle qui est restituée au moment de la solidification ; enfin, soit \( \theta \) la température 
+                finale que prend l'eau échauffée par le plomb.
+            </p>
+            <p>
+                La masse d'eau s'étant échauffée de \( t \) à \( \theta \) degrés, elle a absorbé une quantité 
+                de chaleur représentée par \( m(\theta - t) \) ; d'un autre côté, la masse de plomb, en se refroidissant 
+                de \( T \) à \( \theta \), a cédé, d'une part, une quantité de chaleur \( Mc(T - \theta) \) ; de l'autre, 
+                au moment de la solidification, elle dégage une quantité de chaleur représentée par \( Mx \). 
+                On a donc l'équation :
+            </p>
+            <div class="formula-highlight" onclick="showEq('Mc(T - \\theta) + Mx = m(\\theta - t)')">
+                <div class="formula">
+                    \( Mc(T - \theta) + Mx = m(\theta - t) \)
+                </div>
+                <div class="legend">
+                    d'où l'on tire : \( x = \frac{m(\theta - t) - Mc(T - \theta)}{M} \)
+                </div>
+            </div>
+
+            <h3>Visualisation interactive : Fusion du plomb</h3>
+            <p>
+                Modifiez les paramètres pour voir comment la chaleur latente de fusion \( x \) est déterminée.
+            </p>
+
+            <div class="scene-container" id="scene4-container">
+                <div class="canvas-area" id="canvas4-area"></div>
+                <div class="scene-top-panel">
+                    <div class="scene-title">
+                        <h3>Chaleur latente de fusion : \( x = \frac{m(\theta - t) - Mc(T - \theta)}{M} \)</h3>
+                        <p>Le plomb liquide (\( M \)) se solidifie dans l'eau (\( m \)).</p>
+                    </div>
+                    <div class="scene-legend">
+                        <span><div class="color-box" style="background:#c0392b;"></div> Plomb (M)</span>
+                        <span><div class="color-box" style="background:#3498db;"></div> Eau (m)</span>
+                        <span><div class="color-box" style="background:#f1c40f;"></div> Chaleur latente (x)</span>
+                    </div>
+                </div>
+                <div class="scene-bottom-panel">
+                    <div class="scene-controls">
+                        <label>Masse plomb M (kg): <input type="range" id="M4" min="0.1" max="2" value="0.5" step="0.1"></label>
+                        <label>Temp. plomb T (°C): <input type="range" id="T4" min="100" max="400" value="327" step="1"></label>
+                        <label>Masse eau m (kg): <input type="range" id="m4" min="1" max="10" value="5" step="0.5"></label>
+                        <label>Temp. eau t (°C): <input type="range" id="t4" min="0" max="30" value="20" step="1"></label>
+                        <span id="val4" class="badge">x = 24 500 J/kg</span>
+                    </div>
+                </div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen('scene4-container')">⛶ Plein Écran</button>
+            </div>
+        </div>
+
+        <!-- SECTION 9 : MESURE DE LA CHALEUR LATENTE DE VAPORISATION -->
+        <div class="card">
+            <h2>9. Mesure de la chaleur latente de vaporisation</h2>
+            <p>
+                La chaleur cédée par un kilogramme de vapeur qui se condense étant \( x \), la chaleur cédée 
+                par les \( M \) kilogrammes de vapeur par le fait seul de la condensation est \( Mx \).
+            </p>
+            <p>
+                De plus, indépendamment de toute condensation, le poids \( M \), se refroidissant de \( T \) à \( \theta \), 
+                perd alors une quantité de chaleur représentée par \( M(T - \theta) \) ; d'où l'on voit que la quantité 
+                totale de chaleur cédée par la vapeur est \( Mx + M(T - \theta) \).
+            </p>
+            <p>
+                D'ailleurs la chaleur gagnée par l'eau, le vase et les accessoires est \( m(\theta - t) \) ; donc on a :
+            </p>
+            <div class="formula-highlight" style="border-left-color: #e74c3c;" onclick="showEq('Mx + M(T - \\theta) = m(\\theta - t)')">
+                <div class="formula" style="color: #e74c3c;">
+                    \( Mx + M(T - \theta) = m(\theta - t) \)
+                </div>
+                <div class="legend">
+                    d'où l'on tire : \( x = \frac{m(\theta - t) - M(T - \theta)}{M} \)
+                </div>
+            </div>
+
+            <h3>Valeurs expérimentales</h3>
+            <ul>
+                <li><strong>Despretz</strong> a trouvé pour la chaleur d'élasticité de la vapeur d'eau, à 100°, le nombre <strong>540</strong>.</li>
+                <li><strong>M. Regnault</strong> a trouvé <strong>537</strong>.</li>
+                <li><strong>M. Fabre et Silbermann</strong> ont trouvé <strong>535,8</strong>.</li>
+            </ul>
+            <p>
+                Cela signifie que 1 kilogramme d'eau, à 100 degrés, absorbe, en se vaporisant, la quantité de chaleur 
+                nécessaire pour élever 540 kilogrammes d'eau de zéro à 1 degré.
+            </p>
+
+            <h3>Visualisation interactive : Vaporisation de l'eau</h3>
+            <p>
+                Modifiez les paramètres pour voir comment la chaleur latente de vaporisation \( x \) est déterminée.
+            </p>
+
+            <div class="scene-container" id="scene5-container">
+                <div class="canvas-area" id="canvas5-area"></div>
+                <div class="scene-top-panel">
+                    <div class="scene-title">
+                        <h3>Chaleur latente de vaporisation : \( x = \frac{m(\theta - t) - M(T - \theta)}{M} \)</h3>
+                        <p>La vapeur (\( M \)) se condense dans l'eau (\( m \)).</p>
+                    </div>
+                    <div class="scene-legend">
+                        <span><div class="color-box" style="background:#ecf0f1;"></div> Vapeur (M)</span>
+                        <span><div class="color-box" style="background:#3498db;"></div> Eau (m)</span>
+                        <span><div class="color-box" style="background:#e74c3c;"></div> Chaleur latente (x)</span>
+                    </div>
+                </div>
+                <div class="scene-bottom-panel">
+                    <div class="scene-controls">
+                        <label>Masse vapeur M (kg): <input type="range" id="M5" min="0.1" max="2" value="0.5" step="0.1"></label>
+                        <label>Temp. vapeur T (°C): <input type="range" id="T5" min="100" max="150" value="100" step="1"></label>
+                        <label>Masse eau m (kg): <input type="range" id="m5" min="1" max="10" value="5" step="0.5"></label>
+                        <label>Temp. eau t (°C): <input type="range" id="t5" min="0" max="30" value="20" step="1"></label>
+                        <span id="val5" class="badge">x = 2 256 000 J/kg</span>
+                    </div>
+                </div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen('scene5-container')">⛶ Plein Écran</button>
+            </div>
+        </div>
+
+        <!-- SECTION 10 : LOI DE DULONG ET PETIT -->
+        <div class="card">
+            <h2>10. Loi de Dulong et Petit sur les chaleurs spécifiques des atomes</h2>
+            <p>
+                En 1819, Dulong et Petit firent connaître cette loi remarquable, que le produit de la chaleur 
+                spécifique des corps simples par leur poids atomique est le même pour tous les corps et égal à 37 ; 
+                loi qui peut s'énoncer en disant que, pour les corps simples, les chaleurs spécifiques sont en 
+                raison inverse des poids atomiques.
+            </p>
+            <div class="law-highlight" onclick="showEq('c \\times M_{atomique} = \\text{constante} \\approx 37')">
+                <strong>Loi de Dulong et Petit :</strong><br>
+                \( c \times M_{atomique} = \text{constante} \approx 37 \)<br>
+                \( c \propto \frac{1}{M_{atomique}} \)
+            </div>
+            <p>
+                M. Regnault, après avoir déterminé avec beaucoup de soin les chaleurs spécifiques d'un grand nombre 
+                de corps, a trouvé que le produit du poids atomique par la chaleur spécifique n'est pas rigoureusement 
+                constant, comme l'avaient annoncé Dulong et Petit, mais que ce produit varie entre 38 et 42, variation 
+                qui peut résulter de ce que les chaleurs spécifiques ne sont pas déterminées à des distances égales 
+                du point de fusion des corps.
+            </p>
+        </div>
+
+        <!-- SECTION 11 : CHALEUR SPÉCIFIQUE DES GAZ -->
+        <div class="card">
+            <h2>11. Chaleurs spécifiques des gaz</h2>
+            <p>
+                On rapporte la chaleur spécifique des gaz à celle de l'eau ou à celle de l'air ; dans le premier cas, 
+                elle représente la quantité de chaleur nécessaire pour élever de 1 degré un poids donné de gaz, 
+                comparativement à celle qui serait nécessaire au même poids d'eau ; dans le second, la quantité 
+                de chaleur nécessaire pour élever de 1 degré un volume donné de gaz, comparativement à celle qu'il 
+                faudrait pour le même volume d'air.
+            </p>
+            <p>
+                Dans cette dernière manière de considérer les chaleurs spécifiques des gaz, on peut, en outre, 
+                supposer ceux-ci à pression constante et à volume variable ; ou bien à volume constant, sous 
+                une pression variable.
+            </p>
+            <p>
+                Les chaleurs spécifiques des gaz par rapport à l'eau ont été déterminées, en 1812, par Delaroche 
+                et Bérard. Pour cela, on mesurait la quantité de chaleur cédée à un poids connu d'eau par un poids 
+                aussi connu de gaz qui circulait dans un serpentin placé dans le liquide. On en déduisait ensuite 
+                la chaleur spécifique du gaz à l'aide d'un calcul analogue à celui qui a été donné pour la méthode 
+                des mélanges.
+            </p>
+            <p>
+                Les mêmes physiciens ont déterminé les chaleurs spécifiques des gaz, à pression constante, par 
+                rapport à l'air, en comparant entre elles les quantités de chaleur cédées à un même poids d'eau 
+                par des volumes égaux de gaz et d'air, à la même température et à la pression atmosphérique 
+                pendant toute l'expérience. Depuis les travaux de Delaroche et Bérard, MM. de La Rive et Marcet, 
+                en 1835, ont appliqué la méthode du refroidissement à la même détermination.
+            </p>
+            <p>
+                Enfin, les chaleurs spécifiques des gaz, à volume constant, toujours par rapport à l'air, ont été 
+                calculées par Dulong, en s'appuyant sur la formule qui fait connaître la vitesse de propagation 
+                du son dans les différents gaz (203).
+            </p>
+            <p>
+                D'après les calculs de Laplace et de Poisson, et les expériences de Clément et Desormes, de Delaroche 
+                et Bérard, de Gay-Lussac et de Dulong, on avait admis jusqu'ici que la chaleur spécifique des gaz 
+                à pression constante est toujours plus grande qu'à volume constant. Mais, dans un travail récent 
+                et par une méthode entièrement nouvelle, M. Regnault a trouvé que la différence entre ces deux 
+                espèces de chaleurs spécifiques est nulle ou extrêmement petite.
+            </p>
+
+            <h3>Les deux lois fondamentales</h3>
+            <p>
+                Delaroche et Bérard ont donné sur les chaleurs spécifiques des gaz la première loi suivante, 
+                et Dulong la seconde :
+            </p>
+            <div class="law-highlight" onclick="showEq('c_{O_2} = c_{H_2} = c_{N_2} = \\dots')">
+                <strong>1°</strong> À volume égal, tous les gaz simples ont des chaleurs spécifiques égales.
+            </div>
+            <div class="law-highlight" onclick="showEq('c_{AB} = c_A = c_B')">
+                <strong>2°</strong> Lorsque deux gaz simples se combinent sans condensation, le gaz résultant possède, 
+                à volume égal, la même chaleur spécifique que les gaz simples composants.
+            </div>
+            <p>
+                Les expériences de M. Regnault ont fait voir que la première loi n'est rigoureuse que pour les gaz 
+                soumis à la loi de Mariotte, c'est-à-dire éloignés de leur point de liquéfaction. Les mêmes 
+                expériences n'ont pas confirmé la seconde loi.
+            </p>
+        </div>
+
+        <!-- SECTION 12 : CHALEUR SPÉCIFIQUE DES LIQUIDES, CORPS COMPOSÉS ET ALLIAGES -->
+        <div class="card">
+            <h2>12. Chaleurs spécifiques des liquides, corps composés et alliages</h2>
+            <p>
+                L'augmentation des chaleurs spécifiques avec la température est d'autant plus sensible, que les 
+                corps sont plus près de leur point de fusion. Au contraire, toute action qui augmente la densité 
+                d'un corps et son agrégation moléculaire diminue sa chaleur spécifique.
+            </p>
+            <p>
+                Quant aux liquides, leurs chaleurs spécifiques augmentent avec la température encore beaucoup plus 
+                rapidement que celles des solides. L'eau cependant fait exception, sa chaleur spécifique augmentant 
+                beaucoup moins que celles des autres liquides.
+            </p>
+            <p>
+                Enfin, une même substance possède, à l'état liquide, une plus grande chaleur spécifique qu'à l'état 
+                solide ; par exemple, la chaleur spécifique de la glace est la moitié de celle de l'eau. À l'état 
+                gazeux, la chaleur spécifique est plus petite qu'à l'état liquide.
+            </p>
+            <p>
+                M. Regnault a été conduit, en outre, aux deux lois suivantes sur les chaleurs spécifiques des corps 
+                composés et des alliages :
+            </p>
+            <div class="law-highlight" onclick="showEq('c \\propto \\frac{1}{M_{atomique}}')">
+                <strong>1°</strong> Dans les corps composés ayant même formule atomique, la chaleur spécifique est 
+                en raison inverse du poids atomique.
+            </div>
+            <div class="law-highlight" onclick="showEq('c_{alliage} = \\frac{m_1 c_1 + m_2 c_2}{m_1 + m_2}')">
+                <strong>2°</strong> Pour des températures un peu éloignées du point de fusion, la chaleur spécifique 
+                des alliages est exactement la moyenne des chaleurs spécifiques des métaux composants.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal pour les équations -->
+    <div id="eq-modal">
+        <button class="close-btn" onclick="closeEq()">✕</button>
+        <div class="eq-content" id="eq-modal-content"></div>
+    </div>
+
+    <script>
+        // --- GESTION DU THEME ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if(body.classList.contains('dark-mode')) {
+                themeToggle.textContent = '☀️ Mode Clair';
+            } else {
+                themeToggle.textContent = '🌙 Mode Sombre';
+            }
+        });
+
+        // --- MODAL EQUATION ---
+        function showEq(tex) {
+            const modal = document.getElementById('eq-modal');
+            const content = document.getElementById('eq-modal-content');
+            content.innerHTML = '\\[' + tex + '\\]';
+            modal.style.display = 'flex';
+            MathJax.typesetPromise([content]).catch((err) => console.log(err));
+        }
+
+        function closeEq() {
+            document.getElementById('eq-modal').style.display = 'none';
+        }
+
+        document.getElementById('eq-modal').addEventListener('click', (e) => {
+            if(e.target.id === 'eq-modal') closeEq();
+        });
+
+        // --- PLEIN ECRAN ---
+        function toggleFullscreen(wrapperId) {
+            const wrapper = document.getElementById(wrapperId);
+            if (!document.fullscreenElement) {
+                wrapper.requestFullscreen().catch(err => {
+                    console.log(`Erreur: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // --- THREE.JS SCENE 1 : L'EQUATION ---
+        const container1 = document.getElementById('canvas1-area');
+        const scene1 = new THREE.Scene();
+        const camera1 = new THREE.PerspectiveCamera(50, container1.clientWidth / container1.clientHeight, 0.1, 1000);
+        const renderer1 = new THREE.WebGLRenderer({ antialias: true });
+        renderer1.setSize(container1.clientWidth, container1.clientHeight);
+        renderer1.setClearColor(0x000000);
+        container1.appendChild(renderer1.domElement);
+
+        const ambientLight1 = new THREE.AmbientLight(0xffffff, 0.6);
+        scene1.add(ambientLight1);
+        const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight1.position.set(5, 10, 7);
+        scene1.add(dirLight1);
+
+        const group1 = new THREE.Group();
+        group1.position.y = -1.5; 
+
+        const barGeometry = new THREE.BoxGeometry(1, 1, 1);
+        
+        const matMass = new THREE.MeshStandardMaterial({ color: 0x3498db });
+        const barMass = new THREE.Mesh(barGeometry, matMass);
+        group1.add(barMass);
+
+        const matDelta = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+        const barDelta = new THREE.Mesh(barGeometry, matDelta);
+        group1.add(barDelta);
+
+        const matQ = new THREE.MeshStandardMaterial({ color: 0xf1c40f });
+        const barQ = new THREE.Mesh(barGeometry, matQ);
+        group1.add(barQ);
+
+        barMass.position.set(-2, 0, 0);
+        barDelta.position.set(0, 0, 0);
+        barQ.position.set(2, 0, 0);
+
+        scene1.add(group1);
+
+        camera1.position.set(0, 2, 8);
+        camera1.lookAt(0, 0.5, 0);
+
+        const controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
+        controls1.enableDamping = true;
+        controls1.dampingFactor = 0.05;
+        controls1.target.set(0, 0.5, 0);
+
+        function updateScene1() {
+            const mass = parseFloat(document.getElementById('mass1').value);
+            const dt = parseFloat(document.getElementById('dt1').value);
+            const c = 4180; 
+            const Q = mass * c * dt;
+
+            const maxMass = 5;
+            const maxDt = 50;
+            const maxQ = maxMass * c * maxDt; 
+
+            barMass.scale.y = (mass / maxMass) * 4 + 0.1;
+            barDelta.scale.y = (dt / maxDt) * 4 + 0.1;
+            barQ.scale.y = (Q / maxQ) * 4 + 0.1;
+
+            barMass.position.y = barMass.scale.y / 2;
+            barDelta.position.y = barDelta.scale.y / 2;
+            barQ.position.y = barQ.scale.y / 2;
+
+            document.getElementById('val1').textContent = `Q = ${Q.toLocaleString()} J`;
+        }
+
+        document.getElementById('mass1').addEventListener('input', updateScene1);
+        document.getElementById('dt1').addEventListener('input', updateScene1);
+
+        function animate1() {
+            requestAnimationFrame(animate1);
+            controls1.update();
+            renderer1.render(scene1, camera1);
+        }
+        animate1();
+        updateScene1();
+
+        // --- THREE.JS SCENE 2 : L'ECHAUFFEMENT DE L'EAU ---
+        const container2 = document.getElementById('canvas2-area');
+        const scene2 = new THREE.Scene();
+        const camera2 = new THREE.PerspectiveCamera(50, container2.clientWidth / container2.clientHeight, 0.1, 1000);
+        const renderer2 = new THREE.WebGLRenderer({ antialias: true });
+        renderer2.setSize(container2.clientWidth, container2.clientHeight);
+        renderer2.setClearColor(0x000000);
+        container2.appendChild(renderer2.domElement);
+
+        const ambientLight2 = new THREE.AmbientLight(0xffffff, 0.7);
+        scene2.add(ambientLight2);
+        const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight2.position.set(5, 10, 7);
+        scene2.add(dirLight2);
+
+        const group2 = new THREE.Group();
+        group2.position.y = -1.5; 
+
+        const waterGroup = new THREE.Group();
+        
+        const beakerGeo = new THREE.CylinderGeometry(1.5, 1.5, 3, 32, 1, true);
+        const beakerMat = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+        const beaker = new THREE.Mesh(beakerGeo, beakerMat);
+        beaker.position.y = 1.5;
+        waterGroup.add(beaker);
+
+        const bottomGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.1, 32);
+        const bottomMat = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
+        const bottom = new THREE.Mesh(bottomGeo, bottomMat);
+        bottom.position.y = 0.05;
+        waterGroup.add(bottom);
+
+        const waterGeo = new THREE.CylinderGeometry(1.4, 1.4, 2.5, 32);
+        const waterMat = new THREE.MeshStandardMaterial({ color: 0x3498db, transparent: true, opacity: 0.8 });
+        const waterVolume = new THREE.Mesh(waterGeo, waterMat);
+        waterVolume.position.y = 1.35; 
+        waterGroup.add(waterVolume);
+
+        group2.add(waterGroup);
+
+        const thermoGroup = new THREE.Group();
+        const thermoGeo = new THREE.CylinderGeometry(0.1, 0.1, 4, 8);
+        const thermoMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const thermometer = new THREE.Mesh(thermoGeo, thermoMat);
+        thermometer.position.y = 2.0; 
+        thermoGroup.add(thermometer);
+
+        for (let i = 0; i <= 10; i++) {
+            const markGeo = new THREE.TorusGeometry(0.12, 0.015, 8, 20);
+            const markMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c }); 
+            const mark = new THREE.Mesh(markGeo, markMat);
+            mark.rotation.x = Math.PI / 2;
+            mark.position.y = i * 0.35; 
+            mark.position.z = -0.05; 
+            thermoGroup.add(mark);
+        }
+
+        const tempColGeo = new THREE.CylinderGeometry(0.08, 0.08, 1, 8);
+        const tempColMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+        const tempColumn = new THREE.Mesh(tempColGeo, tempColMat);
+        tempColumn.position.set(0, -0.5, 0); 
+        thermoGroup.add(tempColumn);
+
+        thermoGroup.position.set(2.5, 0, 0);
+        group2.add(thermoGroup);
+
+        scene2.add(group2);
+
+        camera2.position.set(0, 2, 7);
+        camera2.lookAt(0, 0.5, 0);
+        
+        const controls2 = new THREE.OrbitControls(camera2, renderer2.domElement);
+        controls2.enableDamping = true;
+        controls2.target.set(0, 0.5, 0);
+
+        function updateScene2() {
+            const Q = parseFloat(document.getElementById('heat2').value);
+            const m = 1; 
+            const c = 4180; 
+            const T_initial = 20;
+            
+            const deltaT = Q / (m * c);
+            const T_final = T_initial + deltaT;
+
+            let waterColor = 0x3498db; 
+
+            if (T_final <= 0) {
+                waterColor = 0xaaddff; 
+                waterVolume.scale.y = 1.1; 
+            } else if (T_final >= 100) {
+                waterColor = 0xeeeeee; 
+                waterVolume.scale.y = 0.5; 
+            } else {
+                waterColor = 0x3498db; 
+                waterVolume.scale.y = 1.0;
+            }
+
+            waterVolume.material.color.setHex(waterColor);
+            
+            thermoGroup.position.y = 1.55; 
+            
+            const minT = 0;
+            const maxT = 150;
+            let ratio = (T_final - minT) / (maxT - minT);
+            ratio = Math.max(0, Math.min(1, ratio)); 
+
+            tempColumn.scale.y = ratio * 3.5; 
+            tempColumn.position.y = -1.5 + (tempColumn.scale.y / 2);
+
+            document.getElementById('val2').textContent = `Température: ${T_final.toFixed(1)}°C`;
+        }
+
+        document.getElementById('heat2').addEventListener('input', updateScene2);
+
+        function animate2() {
+            requestAnimationFrame(animate2);
+            controls2.update();
+            renderer2.render(scene2, camera2);
+        }
+        animate2();
+        updateScene2();
+
+        // --- THREE.JS SCENE 3 : COMPARAISON DES MATERIAUX (CORRIGÉE) ---
+        const container3 = document.getElementById('canvas3-area');
+        const scene3 = new THREE.Scene();
+        const camera3 = new THREE.PerspectiveCamera(50, container3.clientWidth / container3.clientHeight, 0.1, 1000);
+        const renderer3 = new THREE.WebGLRenderer({ antialias: true });
+        renderer3.setSize(container3.clientWidth, container3.clientHeight);
+        renderer3.setClearColor(0x000000);
+        container3.appendChild(renderer3.domElement);
+
+        const ambientLight3 = new THREE.AmbientLight(0xffffff, 0.7);
+        scene3.add(ambientLight3);
+        const dirLight3 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight3.position.set(5, 10, 7);
+        scene3.add(dirLight3);
+
+        const group3 = new THREE.Group();
+        group3.position.y = -1.5; 
+
+        const materials = [
+            { name: 'Eau', c: 4180, color: 0x3498db },
+            { name: 'Alu', c: 900, color: 0x95a5a6 },
+            { name: 'Fer', c: 450, color: 0x7f8c8d },
+            { name: 'Cuivre', c: 385, color: 0xe67e22 }
+        ];
+
+        const bars3 = [];
+        const barWidth = 0.8;
+        const spacing = 1.2;
+        const startX = -((materials.length - 1) * spacing) / 2;
+
+        // Échelle de température pour la normalisation (0 à 200°C)
+        const MAX_TEMP_SCALE = 200; 
+
+        materials.forEach((mat, index) => {
+            const geo = new THREE.BoxGeometry(barWidth, 1, barWidth);
+            const material = new THREE.MeshStandardMaterial({ color: mat.color });
+            const bar = new THREE.Mesh(geo, material);
+            bar.position.x = startX + index * spacing;
+            group3.add(bar);
+            bars3.push({ mesh: bar, c: mat.c, name: mat.name });
+        });
+
+        scene3.add(group3);
+
+        camera3.position.set(0, 2, 6);
+        camera3.lookAt(0, 0.5, 0);
+
+        const controls3 = new THREE.OrbitControls(camera3, renderer3.domElement);
+        controls3.enableDamping = true;
+        controls3.target.set(0, 0.5, 0);
+
+        function updateScene3() {
+            const Q = parseFloat(document.getElementById('heat3').value);
+            const m = 1; 
+            const T_initial = 20;
+
+            bars3.forEach((item, index) => {
+                const deltaT = Q / (m * item.c);
+                const T_final = T_initial + deltaT;
+                
+                // Normalisation par rapport à MAX_TEMP_SCALE (0 à 200°C)
+                // On suppose que la barre fait 4 unités de haut pour 200°C
+                const heightRatio = Math.min(T_final / MAX_TEMP_SCALE, 1);
+                item.mesh.scale.y = heightRatio * 4 + 0.1;
+                item.mesh.position.y = item.mesh.scale.y / 2;
+
+                // Couleur basée sur la température absolue
+                // Bleu (froid) à Rouge (chaud) en passant par le vert/jaune
+                // Utilisation d'une interpolation simple
+                const tempRatio = Math.min(T_final / MAX_TEMP_SCALE, 1);
+                const color = new THREE.Color(0x3498db).lerp(new THREE.Color(0xe74c3c), tempRatio);
+                item.mesh.material.color.set(color);
+            });
+
+            document.getElementById('val3').textContent = `Énergie: ${Q.toLocaleString()} J`;
+        }
+
+        document.getElementById('heat3').addEventListener('input', updateScene3);
+
+        function animate3() {
+            requestAnimationFrame(animate3);
+            controls3.update();
+            renderer3.render(scene3, camera3);
+        }
+        animate3();
+        updateScene3();
+
+        // --- THREE.JS SCENE 4 : FUSION DU PLOMB ---
+        const container4 = document.getElementById('canvas4-area');
+        const scene4 = new THREE.Scene();
+        const camera4 = new THREE.PerspectiveCamera(50, container4.clientWidth / container4.clientHeight, 0.1, 1000);
+        const renderer4 = new THREE.WebGLRenderer({ antialias: true });
+        renderer4.setSize(container4.clientWidth, container4.clientHeight);
+        renderer4.setClearColor(0x000000);
+        container4.appendChild(renderer4.domElement);
+
+        const ambientLight4 = new THREE.AmbientLight(0xffffff, 0.6);
+        scene4.add(ambientLight4);
+        const dirLight4 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight4.position.set(5, 10, 7);
+        scene4.add(dirLight4);
+
+        const group4 = new THREE.Group();
+        group4.position.y = -1.5; 
+
+        const beakerGeo4 = new THREE.CylinderGeometry(1.8, 1.8, 3, 32, 1, true);
+        const beakerMat4 = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+        const beaker4 = new THREE.Mesh(beakerGeo4, beakerMat4);
+        beaker4.position.y = 1.5;
+        group4.add(beaker4);
+
+        const bottomGeo4 = new THREE.CylinderGeometry(1.8, 1.8, 0.1, 32);
+        const bottomMat4 = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
+        const bottom4 = new THREE.Mesh(bottomGeo4, bottomMat4);
+        bottom4.position.y = 0.05;
+        group4.add(bottom4);
+
+        const waterGeo4 = new THREE.CylinderGeometry(1.7, 1.7, 2.5, 32);
+        const waterMat4 = new THREE.MeshStandardMaterial({ color: 0x3498db, transparent: true, opacity: 0.7 });
+        const water4 = new THREE.Mesh(waterGeo4, waterMat4);
+        water4.position.y = 1.35;
+        group4.add(water4);
+
+        const leadGeo = new THREE.SphereGeometry(0.5, 16, 16);
+        const leadMat = new THREE.MeshStandardMaterial({ color: 0xc0392b, metalness: 0.8, roughness: 0.4 });
+        const leadBall = new THREE.Mesh(leadGeo, leadMat);
+        leadBall.position.set(0, 4, 0);
+        group4.add(leadBall);
+
+        const heatGeo = new THREE.SphereGeometry(0.8, 16, 16);
+        const heatMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f, transparent: true, opacity: 0.3 });
+        const heatHalo = new THREE.Mesh(heatGeo, heatMat);
+        heatHalo.position.set(0, 4, 0);
+        group4.add(heatHalo);
+
+        scene4.add(group4);
+
+        camera4.position.set(0, 3, 8);
+        camera4.lookAt(0, 1, 0);
+
+        const controls4 = new THREE.OrbitControls(camera4, renderer4.domElement);
+        controls4.enableDamping = true;
+        controls4.target.set(0, 1, 0);
+
+        function updateScene4() {
+            const M = parseFloat(document.getElementById('M4').value);
+            const T = parseFloat(document.getElementById('T4').value);
+            const m = parseFloat(document.getElementById('m4').value);
+            const t = parseFloat(document.getElementById('t4').value);
+            
+            const c_lead = 128; 
+            const c_water = 4180;
+            const x_lead = 24500; 
+            
+            const numerator = M * c_lead * T + M * x_lead + m * c_water * t;
+            const denominator = m * c_water + M * c_lead;
+            const theta = numerator / denominator;
+            
+            const x_calc = (m * c_water * (theta - t) - M * c_lead * (T - theta)) / M;
+            
+            document.getElementById('val4').textContent = `x = ${Math.round(x_calc).toLocaleString()} J/kg`;
+            
+            const time = Date.now() / 1000;
+            const dropProgress = (time % 4) / 4;
+            leadBall.position.y = 4 - dropProgress * 3;
+            heatHalo.position.y = leadBall.position.y;
+            
+            const tempRatio = Math.min((theta - t) / 50, 1);
+            water4.material.color.setHex(0x3498db).lerp(new THREE.Color(0xe74c3c), tempRatio);
+        }
+
+        document.getElementById('M4').addEventListener('input', updateScene4);
+        document.getElementById('T4').addEventListener('input', updateScene4);
+        document.getElementById('m4').addEventListener('input', updateScene4);
+        document.getElementById('t4').addEventListener('input', updateScene4);
+
+        function animate4() {
+            requestAnimationFrame(animate4);
+            controls4.update();
+            updateScene4();
+            renderer4.render(scene4, camera4);
+        }
+        animate4();
+
+        // --- THREE.JS SCENE 5 : VAPORISATION DE L'EAU ---
+        const container5 = document.getElementById('canvas5-area');
+        const scene5 = new THREE.Scene();
+        const camera5 = new THREE.PerspectiveCamera(50, container5.clientWidth / container5.clientHeight, 0.1, 1000);
+        const renderer5 = new THREE.WebGLRenderer({ antialias: true });
+        renderer5.setSize(container5.clientWidth, container5.clientHeight);
+        renderer5.setClearColor(0x000000);
+        container5.appendChild(renderer5.domElement);
+
+        const ambientLight5 = new THREE.AmbientLight(0xffffff, 0.7);
+        scene5.add(ambientLight5);
+        const dirLight5 = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight5.position.set(5, 10, 7);
+        scene5.add(dirLight5);
+
+        const group5 = new THREE.Group();
+        group5.position.y = -1.5; 
+
+        const beakerGeo5 = new THREE.CylinderGeometry(1.8, 1.8, 3, 32, 1, true);
+        const beakerMat5 = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.2, side: THREE.DoubleSide });
+        const beaker5 = new THREE.Mesh(beakerGeo5, beakerMat5);
+        beaker5.position.y = 1.5;
+        group5.add(beaker5);
+
+        const bottomGeo5 = new THREE.CylinderGeometry(1.8, 1.8, 0.1, 32);
+        const bottomMat5 = new THREE.MeshPhongMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
+        const bottom5 = new THREE.Mesh(bottomGeo5, bottomMat5);
+        bottom5.position.y = 0.05;
+        group5.add(bottom5);
+
+        const waterGeo5 = new THREE.CylinderGeometry(1.7, 1.7, 2.5, 32);
+        const waterMat5 = new THREE.MeshStandardMaterial({ color: 0x3498db, transparent: true, opacity: 0.7 });
+        const water5 = new THREE.Mesh(waterGeo5, waterMat5);
+        water5.position.y = 1.35;
+        group5.add(water5);
+
+        const steamParticles = [];
+        for (let i = 0; i < 20; i++) {
+            const particleGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const particleMat = new THREE.MeshBasicMaterial({ color: 0xecf0f1, transparent: true, opacity: 0.6 });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.position.set(
+                (Math.random() - 0.5) * 2,
+                3 + Math.random() * 2,
+                (Math.random() - 0.5) * 2
+            );
+            group5.add(particle);
+            steamParticles.push({
+                mesh: particle,
+                speed: 0.5 + Math.random() * 1,
+                offset: Math.random() * Math.PI * 2
+            });
+        }
+
+        scene5.add(group5);
+
+        camera5.position.set(0, 3, 8);
+        camera5.lookAt(0, 1, 0);
+
+        const controls5 = new THREE.OrbitControls(camera5, renderer5.domElement);
+        controls5.enableDamping = true;
+        controls5.target.set(0, 1, 0);
+
+        function updateScene5() {
+            const M = parseFloat(document.getElementById('M5').value);
+            const T = parseFloat(document.getElementById('T5').value);
+            const m = parseFloat(document.getElementById('m5').value);
+            const t = parseFloat(document.getElementById('t5').value);
+            
+            const c_water = 4180;
+            const x_water = 2257000; 
+            
+            const numerator = M * x_water + M * c_water * T + m * c_water * t;
+            const denominator = (m + M) * c_water;
+            const theta = numerator / denominator;
+            
+            const x_calc = (m * c_water * (theta - t) - M * c_water * (T - theta)) / M;
+            
+            document.getElementById('val5').textContent = `x = ${Math.round(x_calc).toLocaleString()} J/kg`;
+            
+            const time = Date.now() / 1000;
+            steamParticles.forEach((p, index) => {
+                p.mesh.position.y += p.speed * 0.02;
+                p.mesh.position.x += Math.sin(time + p.offset) * 0.01;
+                if (p.mesh.position.y > 5) {
+                    p.mesh.position.y = 3;
+                }
+                p.mesh.material.opacity = 0.6 * (1 - (p.mesh.position.y - 3) / 2);
+            });
+            
+            const tempRatio = Math.min((theta - t) / 50, 1);
+            water5.material.color.setHex(0x3498db).lerp(new THREE.Color(0xe74c3c), tempRatio);
+        }
+
+        document.getElementById('M5').addEventListener('input', updateScene5);
+        document.getElementById('T5').addEventListener('input', updateScene5);
+        document.getElementById('m5').addEventListener('input', updateScene5);
+        document.getElementById('t5').addEventListener('input', updateScene5);
+
+        function animate5() {
+            requestAnimationFrame(animate5);
+            controls5.update();
+            updateScene5();
+            renderer5.render(scene5, camera5);
+        }
+        animate5();
+
+        // --- REDIMENSIONNEMENT ---
+        window.addEventListener('resize', () => {
+            [container1, container2, container3, container4, container5].forEach((container, index) => {
+                const camera = [camera1, camera2, camera3, camera4, camera5][index];
+                const renderer = [renderer1, renderer2, renderer3, renderer4, renderer5][index];
+                if(container && camera && renderer) {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                }
+            });
+        });
+
+        // Initialisation
+        updateScene1();
+        updateScene2();
+        updateScene3();
+        updateScene4();
+        updateScene5();
+
+    </script>
+</body>
+</html>
