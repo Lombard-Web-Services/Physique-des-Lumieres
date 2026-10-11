@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leçon 1 — Objet de la physique</title>
+    <style>
+        /* ---------- Thème sombre par défaut ---------- */
+        :root[data-theme="dark"] {
+            --bg: #0e1116;
+            --surface: #161b22;
+            --text: #e6edf3;
+            --text-secondary: #9ba7b4;
+            --accent: #6ea8fe;
+            --accent-soft: rgba(110, 168, 254, 0.12);
+            --border: #2a313a;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            --toggle-bg: #1f2630;
+            --toggle-knob: #6ea8fe;
+        }
+
+        /* ---------- Thème clair ---------- */
+        :root[data-theme="light"] {
+            --bg: #f5f7fa;
+            --surface: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #4a5568;
+            --accent: #2b6cb0;
+            --accent-soft: rgba(43, 108, 176, 0.08);
+            --border: #e2e8f0;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --toggle-bg: #cbd5e0;
+            --toggle-knob: #2b6cb0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.75;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 2rem 1rem 4rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* ---------- En-tête ---------- */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        header .subtitle {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            letter-spacing: 0.04em;
+        }
+
+        /* ---------- Bouton de bascule ---------- */
+        .theme-toggle {
+            position: fixed;
+            top: 1.2rem;
+            right: 1.2rem;
+            z-index: 100;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 0.35rem 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+        }
+
+        .theme-toggle .icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle .label {
+            padding-right: 0.3rem;
+        }
+
+        /* ---------- Sections ---------- */
+        section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        @media (max-width: 600px) {
+            section {
+                padding: 1.3rem 1.1rem;
+            }
+        }
+
+        section h2 {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+
+        section h2 .num {
+            font-size: 0.85rem;
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 0.15rem 0.55rem;
+            border-radius: 6px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            flex-shrink: 0;
+        }
+
+        section p {
+            margin-bottom: 0.85rem;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        section p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Listes */
+        ul, ol {
+            margin: 0.5rem 0 0.9rem 1.6rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+            text-align: justify;
+        }
+
+        /* Mises en évidence */
+        em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        strong {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Bloc citation / note */
+        .note {
+            background: var(--accent-soft);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.3rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.2rem 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .note p {
+            margin-bottom: 0.4rem;
+        }
+
+        .note p:last-child {
+            margin-bottom: 0;
+        }
+
+        .note .title {
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Séparateur */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        /* Références bibliographiques */
+        .references {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+        }
+
+        .references ul {
+            list-style-type: none;
+            margin-left: 0;
+        }
+
+        .references li {
+            padding-left: 1.2rem;
+            position: relative;
+            margin-bottom: 0.35rem;
+        }
+
+        .references li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Pied de page */
+        footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.03em;
+        }
+
+        /* Défilement */
+        ::selection {
+            background: var(--accent);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bouton thème -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Basculer le thème">
+        <span class="icon" id="themeIcon">🌙</span>
+        <span class="label" id="themeLabel">Sombre</span>
+    </button>
+
+    <div class="container">
+
+        <header>
+            <h1>Leçon 1 — Objet de la physique</h1>
+            <p class="subtitle">Notions fondamentales sur la matière, les corps et les phénomènes physiques</p>
+        </header>
+
+        <!-- 1 -->
+        <section>
+            <h2><span class="num">1</span> Objet de la physique</h2>
+            <p>La physique a pour objet l’étude des phénomènes que présentent les corps, en tant que ceux-ci n’éprouvent pas de changement dans leur composition.</p>
+            <p>La chimie, au contraire, traite particulièrement des phénomènes qui modifient plus ou moins profondément la nature des corps.</p>
+        </section>
+
+        <!-- 2 -->
+        <section>
+            <h2><span class="num">2</span> La matière</h2>
+            <p>On nomme <strong>matière</strong> ou <strong>substance</strong> tout ce qui tombe immédiatement sous nos sens.</p>
+            <p>Il existe une multitude de substances élémentaires ou simples, c’est-à-dire dont l’analyse chimique n’extrait qu’une seule espèce de matière. Ce nombre augmente au fur et à mesure que cette science et ses méthodes d’analyse évoluent ; celles-ci seront décrites lorsque nous traiterons du spectre de la lumière. Il est possible que plus tard le nombre de substances simples augmente ou diminue, car on peut en découvrir de nouvelles comme il peut arriver qu’on parvienne à en décomposer plusieurs.</p>
+        </section>
+
+        <!-- 3 -->
+        <section>
+            <h2><span class="num">3</span> Corps, atomes et molécules</h2>
+            <p>Toute quantité de matière limitée est un <strong>corps</strong>. Les propriétés des corps font voir qu’ils ne sont point formés d’une matière continue, mais d’éléments pour ainsi dire infiniment petits, qui ne peuvent être divisés physiquement et sont simplement juxtaposés sans se toucher, étant maintenus à distance par des attractions et des répulsions réciproques qu’on désigne sous le nom de <strong>forces moléculaires</strong>. Ces éléments des corps se nomment <strong>atomes</strong>. Un groupe d’atomes forme une <strong>molécule</strong>. Les corps ne sont que des agrégats de molécules.</p>
+        </section>
+
+        <!-- 4 -->
+        <section>
+            <h2><span class="num">4</span> Masse</h2>
+            <p>En physique, on entend par <strong>masse</strong> d’un corps la quantité de matière qu’il contient. En mécanique, cette définition est insuffisante.</p>
+        </section>
+
+        <!-- 5 -->
+        <section>
+            <h2><span class="num">5</span> État des corps</h2>
+            <p>On peut distinguer <strong>trois états</strong> des corps :</p>
+            <ul>
+                <li><strong>L’état solide</strong>, qui s’observe aux températures ordinaires, par exemple dans le bois, les pierres, les métaux. Cet état est caractérisé par une adhérence telle entre les molécules qu’on ne peut les séparer que par un effort plus ou moins considérable. C’est en vertu de cette adhérence que les corps solides possèdent une dureté plus ou moins grande et conservent par eux-mêmes la forme que la nature ou l’art leur a donnée.</li>
+                <li><strong>L’état liquide</strong>, que présentent l’eau, les huiles. Le caractère distinctif des liquides est une adhérence si faible entre leurs molécules qu’elles peuvent glisser les unes sur les autres avec une extrême facilité. D’où il résulte que ces corps ne présentent aucune dureté et n’affectent aucune forme particulière, mais prennent toujours celle du récipient qui les contient.</li>
+                <li><strong>L’état gazeux</strong>, qu’on observe dans l’air et dans un grand nombre d’autres corps qu’on nomme gaz ou fluides aériformes. Dans les gaz, la mobilité des molécules est encore plus grande que dans les liquides, mais leur caractère distinctif est surtout une tendance à prendre sans cesse un volume plus grand, propriété qu’on désigne sous le nom d’<strong>expansibilité</strong>, et qui sera constatée par l’expérience.</li>
+            </ul>
+            <p>Les liquides et les gaz se désignent sous le nom général de <strong>fluides</strong>.</p>
+            <p>La plupart des corps simples et beaucoup de corps composés peuvent successivement se présenter à l’état solide, liquide ou gazeux, suivant les variations de température. L’eau nous en offre un exemple bien connu.</p>
+            <p>C’est du rapport entre les attractions et les répulsions moléculaires que dépendent les trois états des corps.</p>
+        </section>
+
+        <!-- 6 -->
+        <section>
+            <h2><span class="num">6</span> Phénomènes physiques</h2>
+            <p>Tout changement survenu dans l’état des corps, sans altération de sa composition, est un <strong>phénomène physique</strong>. Un corps qui tombe, un son qui se produit, de l’eau qui se congèle, sont des phénomènes.</p>
+        </section>
+
+        <!-- 7 -->
+        <section>
+            <h2><span class="num">7</span> Lois et théories physiques</h2>
+            <p>On nomme <strong>loi physique</strong> la relation constante qui existe entre un phénomène et sa cause. Par exemple, on démontre qu’un volume donné de gaz devient deux ou trois fois moindre lorsqu’il supporte une pression deux ou trois fois plus grande : c’est là une loi physique qu’on exprime en disant que les volumes des gaz sont en raison inverse des pressions.</p>
+            <p>Une <strong>théorie physique</strong> est l’ensemble des lois qui se rapportent à une même classe de phénomènes. C’est ainsi qu’on dit : la théorie de la lumière, la théorie de l’électricité. Cependant cette dénomination s’applique aussi, dans un sens plus restreint, à l’explication de certains phénomènes particuliers. Par exemple lorsqu’on dit : la théorie de la rosée, la théorie du mirage.</p>
+        </section>
+
+        <!-- 8 -->
+        <section>
+            <h2><span class="num">8</span> Agents physiques <span style="font-weight:400;font-size:0.85rem;color:var(--text-secondary);">(fluides impondérables, matières subtiles)</span></h2>
+            <p>Comme cause des phénomènes que présentent les corps, on admet l’existence d’<strong>agents physiques</strong> ou de <strong>forces naturelles</strong> qui régissent la matière.</p>
+            <p>Ces principaux agents sont : l’attraction, la chaleur, la lumière, le magnétisme, l’électricité…</p>
+            <p>Les agents physiques ne se manifestent à nous que par leurs effets ; leur nature nous est plus ou moins connue.</p>
+            <p>Est-ce que ce sont des propriétés inhérentes à la matière, ou bien des matières subtiles, impalpables, répandues dans tout l’univers, et dont les effets sont le résultat de mouvements particuliers imprimés à leur masse ?</p>
+            <p>Cette dernière proposition est généralement admise, mais alors ces matières sont-elles distinctes les unes des autres, ou doivent-elles être rapportées à une source unique ?</p>
+            <p>C’est là tout le travail du physicien, qui tend à faire prévaloir cette dernière opinion, à mesure que les sciences physiques repoussent leurs limites.</p>
+
+            <div class="note">
+                <p class="title">Synthèse</p>
+                <p>Les physiciens sont de plus en plus d’accord pour n’admettre qu’une substance unique, qui remplit l’univers et qu’ils désignent sous le nom de <strong>fluide impondérable</strong> ou <strong>harmonique vibratoire</strong>, comme cause, par son mouvement vibratoire, des phénomènes que nous offrent la chaleur, la lumière, le magnétisme et l’électricité ; en sorte que la différence qui caractérise ces phénomènes ne serait due qu’à la nature et à l’amplitude des vibrations de matières subtiles ou fluides impondérables.</p>
+                <p>Enfin, entre l’éther et les dernières molécules des corps, la dépendance est telle que non seulement leurs ondulations se communiquent à ces molécules, mais que réciproquement celles-ci transmettent leur mouvement au fluide impondérable, et par son intermédiaire aux molécules les plus éloignées. Selon la théorie du fluide impondérable du XVIII<sup>e</sup> siècle, les molécules de la matière sont en même temps des récipients et des sources de mouvement ondulatoire, et tous les phénomènes physiques doivent être rapportés à une cause mécanique.</p>
+            </div>
+
+            <hr>
+
+            <div class="references">
+                <p style="font-weight:600;color:var(--text);margin-bottom:0.5rem;">À ce sujet, de remarquables et curieux ouvrages furent publiés :</p>
+                <ul>
+                    <li><em>Corrélation des forces physiques</em> (Grove)</li>
+                    <li><em>La chaleur considérée comme un mode de mouvement</em> (J. Tyndall)</li>
+                    <li><em>La radiation</em> (même auteur)</li>
+                    <li><em>Unité des forces physiques</em> (A. Rome) par P. Secchi, traduit par l’abbé Moigno.</li>
+                </ul>
+            </div>
+
+            <hr>
+
+            <p>Dans les anciennes théories où la chaleur, la lumière, le magnétisme et l’électricité étaient attribués à des fluides spéciaux, ces fluides n’ayant pas un poids appréciable aux balances les plus sensibles, on leur donnait le nom de <strong>fluides impondérables</strong>. De là la distinction des <strong>matières pondérables</strong>, ou matières proprement dites, et des <strong>matières impondérables</strong>. Mais ces expressions ne sont plus en rapport avec les idées nouvelles.</p>
+        </section>
+
+        <footer>
+            Leçon 1 — Objet de la physique · Édition corrigée par Thibaut LOMBARD
+        </footer>
+
+    </div>
+
+    <script>
+        (function() {
+            const root = document.documentElement;
+            const toggle = document.getElementById('themeToggle');
+            const icon = document.getElementById('themeIcon');
+            const label = document.getElementById('themeLabel');
+
+            // Thème initial : sombre par défaut (data-theme="dark" déjà dans le HTML)
+            let currentTheme = 'dark';
+
+            function applyTheme(theme) {
+                root.setAttribute('data-theme', theme);
+                currentTheme = theme;
+
+                if (theme === 'dark') {
+                    icon.textContent = '🌙';
+                    label.textContent = 'Sombre';
+                } else {
+                    icon.textContent = '☀️';
+                    label.textContent = 'Clair';
+                }
+
+                // Petite animation sur l'icône
+                icon.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    icon.style.transform = 'rotate(0deg)';
+                }, 300);
+            }
+
+            toggle.addEventListener('click', () => {
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
+
+            // Appliquer l'état initial (déjà sombre, mais on s'assure que les textes correspondent)
+            applyTheme('dark');
+        })();
+    </script>
+
+</body>
+</html>
