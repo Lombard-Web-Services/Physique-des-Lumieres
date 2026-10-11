@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leçon 2 — Les propriétés générales des corps</title>
+    <style>
+        /* ---------- Thème sombre par défaut ---------- */
+        :root[data-theme="dark"] {
+            --bg: #0e1116;
+            --surface: #161b22;
+            --text: #e6edf3;
+            --text-secondary: #9ba7b4;
+            --accent: #6ea8fe;
+            --accent-soft: rgba(110, 168, 254, 0.12);
+            --border: #2a313a;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            --toggle-bg: #1f2630;
+            --toggle-knob: #6ea8fe;
+        }
+
+        /* ---------- Thème clair ---------- */
+        :root[data-theme="light"] {
+            --bg: #f5f7fa;
+            --surface: #ffffff;
+            --text: #1a202c;
+            --text-secondary: #4a5568;
+            --accent: #2b6cb0;
+            --accent-soft: rgba(43, 108, 176, 0.08);
+            --border: #e2e8f0;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --toggle-bg: #cbd5e0;
+            --toggle-knob: #2b6cb0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.75;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 2rem 1rem 4rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        /* ---------- En-tête ---------- */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        header .subtitle {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            letter-spacing: 0.04em;
+        }
+
+        /* ---------- Bouton de bascule ---------- */
+        .theme-toggle {
+            position: fixed;
+            top: 1.2rem;
+            right: 1.2rem;
+            z-index: 100;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 0.35rem 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+        }
+
+        .theme-toggle .icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle .label {
+            padding-right: 0.3rem;
+        }
+
+        /* ---------- Sections ---------- */
+        section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.8rem 2rem;
+            margin-bottom: 1.8rem;
+            box-shadow: var(--shadow);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        @media (max-width: 600px) {
+            section {
+                padding: 1.3rem 1.1rem;
+            }
+        }
+
+        section h2 {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+
+        section h2 .num {
+            font-size: 0.85rem;
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 0.15rem 0.55rem;
+            border-radius: 6px;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            flex-shrink: 0;
+        }
+
+        section h3 {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 1.2rem 0 0.6rem;
+        }
+
+        section h3:first-of-type {
+            margin-top: 0;
+        }
+
+        section p {
+            margin-bottom: 0.85rem;
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        section p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Listes */
+        ul, ol {
+            margin: 0.5rem 0 0.9rem 1.6rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+            text-align: justify;
+        }
+
+        /* Mises en évidence */
+        em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        strong {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* Bloc citation / note */
+        .note {
+            background: var(--accent-soft);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.3rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.2rem 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .note p {
+            margin-bottom: 0.4rem;
+        }
+
+        .note p:last-child {
+            margin-bottom: 0;
+        }
+
+        .note .title {
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Encadré "physique moderne" */
+        .modern {
+            background: var(--surface);
+            border: 1px dashed var(--accent);
+            border-radius: 8px;
+            padding: 0.9rem 1.2rem;
+            margin: 1rem 0;
+            font-size: 0.93rem;
+            color: var(--text-secondary);
+        }
+
+        .modern .label {
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        /* Séparateur */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        /* Pied de page */
+        footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            letter-spacing: 0.03em;
+        }
+
+        /* Défilement */
+        ::selection {
+            background: var(--accent);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bouton thème -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Basculer le thème">
+        <span class="icon" id="themeIcon">🌙</span>
+        <span class="label" id="themeLabel">Sombre</span>
+    </button>
+
+    <div class="container">
+
+        <header>
+            <h1>Leçon 2 — Les propriétés générales des corps</h1>
+            <p class="subtitle">Impénétrabilité · Étendue · Compressibilité · Élasticité · Mobilité · Inertie</p>
+        </header>
+
+        <!-- Diverses sortes de propriétés -->
+        <section>
+            <h2><span class="num">1</span> Diverses sortes de propriétés</h2>
+            <p>On entend par <strong>propriétés des corps</strong> leurs diverses manières de se présenter à nos sens. On en distingue de <strong>générales</strong> et de <strong>particulières</strong>. Les premières sont celles qui conviennent à tous les corps, sous quelque état qu’on les considère. Celles qu’il importe de connaître dès à présent sont : l’impénétrabilité, l’élasticité, la mobilité et l’inertie.</p>
+            <p>Les propriétés particulières sont celles qu’on n’observe que dans certains corps ou dans certains états des corps ; telles sont : la solidité, la fluidité, la ténacité, la ductilité, la malléabilité, la dureté, la transparence, la coloration, etc.</p>
+            <p>Il ne sera question, pour le moment, que des propriétés générales énoncées ; en observant, toutefois, que l’impénétrabilité et l’étendue sont moins des propriétés générales de la matière que des attributs essentiels qui suffiraient pour la définir. Remarquons encore que la divisibilité, la porosité, la compressibilité et l’élasticité ne s’appliquent qu’aux corps considérés comme des amas de molécules, et non aux atomes.</p>
+        </section>
+
+        <!-- Impénétrabilité -->
+        <section>
+            <h2><span class="num">2</span> L’impénétrabilité</h2>
+            <p>L’<strong>impénétrabilité</strong> est la propriété en vertu de laquelle deux éléments matériels ne peuvent occuper simultanément le même lieu de l’espace. Cette propriété ne se rencontre réellement que dans les atomes. Dans un grand nombre de phénomènes, les corps paraissent se pénétrer.</p>
+        </section>
+
+        <!-- Étendue -->
+        <section>
+            <h2><span class="num">3</span> L’étendue</h2>
+            <p>L’<strong>étendue</strong> est la propriété qu’a tout corps d’occuper une portion limitée de l’espace.</p>
+        </section>
+
+        <!-- Volume apparent et volume réel -->
+        <section>
+            <h2><span class="num">4</span> Volume apparent et volume réel</h2>
+            <p>Eu égard à la porosité, il y a lieu de distinguer, dans tout corps, le <strong>volume apparent</strong>, c’est-à-dire la portion de l’espace qu’occupe le corps, et le <strong>volume réel</strong>, qui serait celui qu’occuperait la matière propre du corps ; si l’on retranche le volume des pores, on obtient le volume réel. Le volume réel d’un corps est invariable ; mais le volume apparent diminue ou augmente avec le volume des pores.</p>
+
+            <div class="modern">
+                <span class="label">Physique moderne</span>
+                <p>Le volume d’un corps peut varier avec la pression, la température, les changements de phase, etc.</p>
+            </div>
+        </section>
+
+        <!-- Compressibilité -->
+        <section>
+            <h2><span class="num">5</span> Compressibilité</h2>
+            <p>La <strong>compressibilité</strong> est la propriété qu’ont les corps de pouvoir se réduire à un moindre volume par l’effet de la pression. Cette propriété est la conséquence de la porosité, dont elle est elle-même une preuve.</p>
+            <p>La compressibilité est très variable d’un corps à un autre. Les corps les plus compressibles sont les gaz, qui peuvent être réduits, sous des pressions suffisantes, à un volume 10, 20 et même 100 fois plus petit que celui qu’ils occupent dans les conditions ordinaires.</p>
+            <p>Toutefois, pour la plupart des gaz, on rencontre une limite de pression au-delà de laquelle l’état gazeux ne persiste plus, mais est remplacé par l’état liquide.</p>
+            <p>La compressibilité des solides est bien moindre que celle des gaz, et se présente à des degrés très différents.</p>
+            <p>Les étoffes, le papier, le liège, le bois, sont les substances les plus compressibles. Les métaux le sont aussi, comme l’indiquent les empreintes que prennent les médailles sous le choc du balancier. Il est à remarquer que la compressibilité des solides a aussi une limite au-delà de laquelle les corps, cédant à la pression, se désagrègent tout à coup et se réduisent souvent en poudre impalpable.</p>
+            <p>Quant aux liquides, leur compressibilité est tellement faible qu’ils ont été longtemps regardés comme tout à fait incompressibles ; mais elle se constate par l’expérience que l’on peut démontrer en hydrostatique.</p>
+
+            <div class="modern">
+                <span class="label">Physique moderne</span>
+                <p>La compressibilité n’est pas simplement une conséquence de la porosité. Un matériau non poreux peut être compressible parce que les distances entre ses constituants peuvent changer sous l’effet de la pression. Et pour les gaz, la compression ne consiste pas simplement à réduire des « pores » entre molécules comme dans une éponge.</p>
+            </div>
+        </section>
+
+        <!-- Élasticité -->
+        <section>
+            <h2><span class="num">6</span> L’élasticité</h2>
+            <p>L’<strong>élasticité</strong> est la propriété qu’ont les corps de reprendre leur forme ou leur volume primitif, lorsque la force qui altérait cette forme ou ce volume cesse d’agir. L’élasticité peut être développée dans les corps par pression, par traction, par flexion ou par torsion. Il ne sera pas question ici, comme propriété générale, que de l’élasticité de pression ; les autres espèces d’élasticité, ne pouvant se produire que dans les solides, seront placées au nombre des propriétés particulières à ces corps.</p>
+            <p>Les gaz sont parfaitement élastiques, c’est-à-dire qu’ils reprennent exactement le même volume aussitôt que la pression redevient la même. Il en est encore ainsi des liquides, à quelque pression qu’ils aient été soumis. Aucun corps solide n’est doué d’une élasticité aussi parfaite que les gaz et les liquides, surtout lorsque les pressions ont été longtemps prolongées. Cependant l’élasticité est très apparente dans le caoutchouc, l’ivoire, le verre ; elle est à peine sensible dans les graisses, les argiles, le plomb.</p>
+            <p>Dans les solides, il y a une <strong>limite d’élasticité</strong> au-delà de laquelle ils sont brisés, ou du moins ne reprennent plus exactement leur forme ou leur volume primitif. Pour l’être humain, dans les entorses, par exemple, la limite d’élasticité des ligaments a été dépassée. Une semblable limite ne se rencontre pas dans les gaz et les liquides, qui reviennent souvent à leur volume primitif.</p>
+            <p>L’élasticité est le résultat d’un rapprochement moléculaire, et par suite, d’un changement de forme qui, dans les corps solides, se constate.</p>
+
+            <div class="modern">
+                <span class="label">Physique moderne</span>
+                <p>L’élasticité résulte plus généralement de la réponse réversible des interactions microscopiques à une déformation.</p>
+            </div>
+        </section>
+
+        <!-- Mobilité, mouvement, repos -->
+        <section>
+            <h2><span class="num">7</span> Mobilité, mouvement, repos</h2>
+            <p>La <strong>mobilité</strong> est la propriété qu’ont les corps de pouvoir passer d’un lieu à un autre.</p>
+            <p>On nomme <strong>mouvement</strong> l’état d’un corps qui change de lieu ; <strong>repos</strong>, sa permanence dans le même lieu. Le repos ou le mouvement sont absolus ou relatifs.</p>
+            <ul>
+                <li>Le <strong>repos absolu</strong> serait la privation complète de mouvement. Dans tout l’univers, on ne connaît aucun corps dans cet état.</li>
+                <li>Le <strong>mouvement absolu</strong> d’un corps serait son déplacement par rapport à un autre corps à l’état de repos absolu.</li>
+                <li>Le <strong>repos relatif</strong>, ou apparent, est l’état d’un corps qui paraît fixe par rapport aux corps environnants, mais qui, en réalité, participe avec eux à un mouvement commun.</li>
+                <li>Le <strong>mouvement relatif</strong> d’un corps n’est que son mouvement apparent, c’est-à-dire qu’on mesure par rapport à d’autres corps qu’on suppose fixes, tandis qu’eux-mêmes se déplacent.</li>
+            </ul>
+            <p>On n’observe dans la nature que des états de repos et de mouvement relatifs.</p>
+        </section>
+
+        <!-- Inertie -->
+        <section>
+            <h2><span class="num">8</span> L’inertie</h2>
+            <p>L’<strong>inertie</strong> est une propriété purement négative : c’est l’inaptitude de la matière à passer d’elle-même de l’état de repos à l’état de mouvement, ou à modifier le mouvement dont elle est animée.</p>
+            <p>Si les corps tombent lorsqu’on les abandonne à eux-mêmes, cela provient d’une force attractive qui les dirige vers le centre de la Terre, et non de leur spontanéité ; si la vitesse d’une bille sur un billard se ralentit graduellement, cela résulte de la résistance de l’air que la bille déplace et du frottement sur le tapis. Il ne faudrait donc pas en conclure que cette bille a une tendance au repos plutôt qu’au mouvement, comme le disaient certains philosophes de l’Antiquité, qui comparaient la matière à une personne paresseuse. Toutes les fois qu’il n’y a pas de résistance, le mouvement se continue sans altération, ainsi que les astres nous en offrent un exemple dans leur révolution autour du Soleil.</p>
+        </section>
+
+        <footer>
+            Leçon 2 — Les propriétés générales des corps · Édition corrigée
+        </footer>
+
+    </div>
+
+    <script>
+        (function() {
+            const root = document.documentElement;
+            const toggle = document.getElementById('themeToggle');
+            const icon = document.getElementById('themeIcon');
+            const label = document.getElementById('themeLabel');
+
+            // Thème initial : sombre par défaut (data-theme="dark" déjà dans le HTML)
+            let currentTheme = 'dark';
+
+            function applyTheme(theme) {
+                root.setAttribute('data-theme', theme);
+                currentTheme = theme;
+
+                if (theme === 'dark') {
+                    icon.textContent = '🌙';
+                    label.textContent = 'Sombre';
+                } else {
+                    icon.textContent = '☀️';
+                    label.textContent = 'Clair';
+                }
+
+                // Petite animation sur l'icône
+                icon.style.transform = 'rotate(360deg)';
+                setTimeout(() => {
+                    icon.style.transform = 'rotate(0deg)';
+                }, 300);
+            }
+
+            toggle.addEventListener('click', () => {
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
+
+            // Appliquer l'état initial (déjà sombre)
+            applyTheme('dark');
+        })();
+    </script>
+
+</body>
+</html>
