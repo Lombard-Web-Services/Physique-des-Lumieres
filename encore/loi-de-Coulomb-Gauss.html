@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Champ en 1/r² — Flux, Gauss, Coulomb</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #000; overflow: hidden;
+    height: 100%;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #ddd; user-select: none;
+  }
+  canvas { display: block; cursor: grab; }
+  canvas.dragging { cursor: none; }
+
+  #figureTitle {
+    position: fixed; top: 30px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center; pointer-events: none;
+    z-index: 5; transition: opacity 0.3s;
+  }
+  #figureTitle .fig-name {
+    display: block; color: #f0f0f0; font-size: 30px;
+    font-style: italic; letter-spacing: 1.5px;
+    font-weight: normal;
+    text-shadow: 0 0 20px rgba(255,255,255,0.18);
+  }
+  #figureTitle .fig-equation {
+    display: block; color: #aaccff; font-size: 20px;
+    font-style: italic; letter-spacing: 1px; margin-top: 10px;
+    text-shadow: 0 0 14px rgba(120,180,255,0.25);
+  }
+  #figureTitle .fig-rule {
+    width: 90px; height: 1px;
+    background: linear-gradient(to right, transparent, #666, transparent);
+    margin: 14px auto 0;
+  }
+
+  #panel {
+    position: fixed; top: 20px; left: 20px;
+    background: rgba(18, 18, 24, 0.92);
+    border: 1px solid #3a3a44; border-radius: 10px;
+    padding: 16px 18px; width: 290px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    z-index: 10; font-size: 13px;
+    transition: width 0.25s ease, padding 0.25s ease, opacity 0.3s;
+    overflow: hidden;
+  }
+  #panel.collapsed { width: 48px; padding: 10px 8px; }
+  #panel.collapsed .panel-body,
+  #panel.collapsed h3 .title-text { display: none; }
+  #panel.collapsed h3 { justify-content: center; border-bottom: none; padding-bottom: 0; margin: 0; }
+  #panel h3 {
+    margin: 0 0 12px 0; font-size: 13px; color: #fff;
+    font-weight: normal; letter-spacing: 2px;
+    text-transform: uppercase; cursor: move;
+    border-bottom: 1px solid #3a3a44;
+    padding-bottom: 10px; display: flex;
+    justify-content: space-between; align-items: center; gap: 8px;
+  }
+  #panel h3 .title-text { flex: 1; }
+  #panel h3 .collapse-btn {
+    background: transparent; border: 1px solid #555;
+    color: #aaa; width: 22px; height: 22px;
+    border-radius: 4px; cursor: pointer;
+    font-size: 13px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; transition: all 0.15s; flex-shrink: 0;
+  }
+  #panel h3 .collapse-btn:hover { background: #333; color: #fff; border-color: #888; }
+  #panel h3 span.grip { color: #666; font-size: 16px; letter-spacing: 0; }
+  #panel .row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; gap: 10px; }
+  #panel label { flex: 1; color: #999; font-size: 12px; letter-spacing: 0.5px; }
+  #panel input[type="range"] { flex: 1.2; accent-color: #55ff88; height: 4px; }
+  #panel select {
+    flex: 1.4; background: #22222a; color: #fff;
+    border: 1px solid #444; padding: 6px 8px;
+    border-radius: 5px; font-family: inherit;
+    font-size: 12px; cursor: pointer;
+  }
+  #panel .value {
+    width: 55px; text-align: right; color: #55ff88;
+    font-variant-numeric: tabular-nums; font-size: 12px;
+  }
+  #panel button {
+    width: 100%; margin-top: 12px; background: #22222a;
+    color: #ddd; border: 1px solid #444; padding: 8px;
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  #panel button:hover { background: #2e2e3a; border-color: #666; color: #fff; }
+  #panel .hint {
+    font-size: 11px; color: #666; margin-top: 12px;
+    line-height: 1.5; border-top: 1px solid #2a2a33;
+    padding-top: 10px; font-style: italic;
+  }
+  #panel .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  #panel .checkbox-row input { accent-color: #55ff88; cursor: pointer; }
+  #panel .checkbox-row label { cursor: pointer; flex: 1; }
+  #panel .section-title {
+    font-size: 11px; color: #666; text-transform: uppercase;
+    letter-spacing: 1.5px; margin: 14px 0 6px 0;
+    border-top: 1px solid #2a2a33; padding-top: 10px;
+  }
+
+  #legend {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 18, 24, 0.85);
+    border: 1px solid rgba(90, 90, 110, 0.5);
+    border-radius: 10px; padding: 18px 22px;
+    z-index: 9; cursor: move;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    transition: opacity 0.3s;
+  }
+  #legend .legend-item {
+    display: flex; align-items: center; gap: 14px;
+    margin: 10px 0; font-size: 16px; color: #ddd; line-height: 1.4;
+  }
+  #legend .legend-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    flex-shrink: 0; position: relative;
+  }
+  #legend .legend-dot::after {
+    content: ''; position: absolute; inset: -4px;
+    border-radius: 50%; background: inherit; opacity: 0.25;
+  }
+  #legend .legend-item.legend-note {
+    font-style: italic; font-size: 14px; color: #aaa;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(120,120,140,0.3);
+  }
+  #legend .legend-handle {
+    font-size: 11px; color: #666; text-align: center;
+    margin-bottom: 4px; letter-spacing: 1px;
+    text-transform: uppercase; cursor: move;
+  }
+
+  /* Pendant l'enregistrement : on cache les overlays HTML,
+     car le canvas dessine lui-même titre + légende */
+  body.recording #panel { opacity: 0 !important; pointer-events: none !important; }
+  body.recording #legend { opacity: 0 !important; pointer-events: none !important; }
+  body.recording #figureTitle { opacity: 0 !important; }
+
+  #recordingExit {
+    display: none; position: fixed; top: 16px; right: 16px;
+    z-index: 100; background: rgba(200, 40, 40, 0.85); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+  body.recording #recordingExit { display: block; }
+  #recordingExit:hover { background: rgba(230, 60, 60, 0.95); }
+
+  #recIndicator {
+    display: none; position: fixed; top: 16px; left: 16px;
+    z-index: 100; background: rgba(30, 0, 0, 0.85); color: #fff;
+    border: 1px solid rgba(255, 60, 60, 0.6);
+    padding: 8px 14px; border-radius: 6px;
+    font-family: 'Courier New', monospace; font-size: 13px;
+    letter-spacing: 1px; backdrop-filter: blur(4px);
+    align-items: center; gap: 10px;
+  }
+  body.recording #recIndicator { display: flex; }
+  #recIndicator .rec-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ff2222; animation: rec-pulse 1s infinite;
+  }
+  @keyframes rec-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.85); }
+  }
+
+  #recordingNav {
+    display: none; position: fixed; bottom: 16px; right: 16px;
+    z-index: 100; background: rgba(18, 18, 24, 0.85); color: #aaa;
+    border: 1px solid rgba(90,90,110,0.5);
+    padding: 8px 14px; border-radius: 6px;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 0.5px; backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  body.recording #recordingNav { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="figureTitle">
+  <span class="fig-name" id="figCaption">Champ en 1/r² — Loi de Gauss</span>
+  <span class="fig-equation" id="figEquation"></span>
+  <div class="fig-rule"></div>
+</div>
+
+<div id="panel">
+  <h3 id="panelHeader">
+    <span class="title-text">Paramètres</span>
+    <span class="grip">⠿</span>
+    <button class="collapse-btn" id="collapseBtn" title="Réduire / déplier">−</button>
+  </h3>
+
+  <div class="panel-body">
+    <div class="row">
+      <label>Configuration</label>
+      <select id="configSelect">
+        <option value="single+">Charge positive seule</option>
+        <option value="single-">Charge négative seule</option>
+        <option value="dipole">Dipôle (+ et −)</option>
+        <option value="two+">Deux charges positives</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showSpheres" checked>
+      <label for="showSpheres">Sphères de Gauss</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showFlux" checked>
+      <label for="showFlux">Flux à travers les sphères</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showRadiation" checked>
+      <label for="showRadiation">Rayonnement (1/r²)</label>
+    </div>
+    <div class="row">
+      <label>Durée</label>
+      <input type="range" id="durationSlider" min="500" max="12000" step="100" value="6000">
+      <span class="value" id="durationValue">6.0s</span>
+    </div>
+    <div class="row">
+      <label>Rotation</label>
+      <input type="range" id="rotSpeed" min="0.1" max="2" step="0.05" value="0.6">
+      <span class="value" id="rotSpeedValue">0.6</span>
+    </div>
+    <div class="row">
+      <label>Zoom</label>
+      <input type="range" id="zoomSlider" min="0.4" max="2" step="0.05" value="1">
+      <span class="value" id="zoomValue">1.0</span>
+    </div>
+
+    <div class="section-title">Enregistrement</div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showTitleRec" checked>
+      <label for="showTitleRec">Afficher le titre + équation</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showLegendRec" checked>
+      <label for="showLegendRec">Afficher la légende</label>
+    </div>
+    <div class="row">
+      <label>Résolution</label>
+      <select id="resSelect">
+        <option value="auto">Auto (fenêtre)</option>
+        <option value="1080">1920 × 1080 (Full HD)</option>
+        <option value="1440">2560 × 1440 (QHD)</option>
+        <option value="2160">3840 × 2160 (4K)</option>
+      </select>
+    </div>
+
+    <button id="replayBtn">↻ Rejouer</button>
+    <button id="recordingBtn">🎥 Enregistrer en vidéo</button>
+    <div class="hint">
+      Clic + glisser pour tourner en 3D.<br>
+      En mode enregistrement : flèches ← → pour changer de figure.<br>
+      Le titre et la légende sont inclus dans la vidéo (dessinés dans le canvas).
+    </div>
+  </div>
+</div>
+
+<button id="recordingExit">■ Arrêter &amp; télécharger</button>
+
+<div id="recIndicator">
+  <div class="rec-dot"></div>
+  <span id="recTime">REC 00:00</span>
+</div>
+
+<div id="recordingNav">← → : changer de figure</div>
+
+<div id="legend">
+  <div class="legend-handle">⠿ Légende</div>
+  <div id="legendItems"></div>
+</div>
+
+<script>
+// ============================================================
+//  CANVAS
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+let recordingResolution = null;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', () => { if (!isRecording) resize(); });
+resize();
+
+// ============================================================
+//  PARAMÈTRES
+// ============================================================
+const CONFIGS = ['single+', 'single-', 'dipole', 'two+'];
+let config = 'single+';
+let showSpheres = true;
+let showFlux = true;
+let showRadiation = true;
+let appearanceDuration = 6000;
+let rotationSpeed = 0.6;
+let zoomFactor = 1.0;
+
+let showTitleInRecording = true;
+let showLegendInRecording = true;
+
+// ============================================================
+//  ÉTAT ANIMATION
+// ============================================================
+let animStartTime = null;
+let animProgress = 0;
+let animDone = false;
+
+// ============================================================
+//  CAMÉRA
+// ============================================================
+let camTheta = 0.6;
+let camPhi = 0.3;
+let isDragging = false;
+let lastMouseX = 0, lastMouseY = 0;
+const PHI_MIN = -Math.PI / 2 + 0.05;
+const PHI_MAX =  Math.PI / 2 - 0.05;
+
+// ============================================================
+//  PROJECTION 3D
+// ============================================================
+const FOCAL = 900;
+function project(x, y, z) {
+  const cosT = Math.cos(camTheta), sinT = Math.sin(camTheta);
+  let x1 =  x * cosT + z * sinT;
+  let z1 = -x * sinT + z * cosT;
+  let y1 =  y;
+
+  const cosP = Math.cos(camPhi), sinP = Math.sin(camPhi);
+  let y2 = y1 * cosP - z1 * sinP;
+  let z2 = y1 * sinP + z1 * cosP;
+  let x2 = x1;
+
+  const camDist = 900;
+  const zCam = z2 + camDist;
+  const scale = (FOCAL / zCam) * zoomFactor;
+
+  return { x: W / 2 + x2 * scale, y: H / 2 - y2 * scale, z: zCam, scale };
+}
+
+// ============================================================
+//  DESSIN POINT 3D
+// ============================================================
+function drawPoint3D(x, y, z, color, label, offsetLabel = [12, -10], radius = 5) {
+  const p = project(x, y, z);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, radius * p.scale, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, (radius + 4) * p.scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  if (label) {
+    ctx.fillStyle = color;
+    const fontA = Math.max(14, Math.round(22 * p.scale));
+    ctx.font = `italic ${fontA}px Georgia, serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(label, p.x + offsetLabel[0] * p.scale, p.y + offsetLabel[1] * p.scale);
+  }
+}
+
+// ============================================================
+//  DESSIN LIGNE 3D
+// ============================================================
+function drawLine3D(p1, p2, color, width = 1, dashed = false, dashPattern = [4, 4]) {
+  const a = project(...p1);
+  const b = project(...p2);
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  if (dashed) ctx.setLineDash(dashPattern);
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ============================================================
+//  GRILLE
+// ============================================================
+function drawFloorGrid() {
+  const gridSize = 600;
+  const step = 100;
+  ctx.strokeStyle = 'rgba(60, 60, 80, 0.12)';
+  ctx.lineWidth = 1;
+  for (let i = -gridSize; i <= gridSize; i += step) {
+    let p1 = project(i, -400, -gridSize);
+    let p2 = project(i, -400,  gridSize);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+
+    p1 = project(-gridSize, -400, i);
+    p2 = project( gridSize, -400, i);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  }
+}
+
+// ============================================================
+//  CONFIGURATIONS DE CHARGES
+// ============================================================
+function getCharges() {
+  switch (config) {
+    case 'single+':
+      return [{ pos: [0, 0, 0], sign: +1, color: '#ff5555', label: '+q' }];
+    case 'single-':
+      return [{ pos: [0, 0, 0], sign: -1, color: '#55aaff', label: '−q' }];
+    case 'dipole':
+      return [
+        { pos: [-120, 0, 0], sign: +1, color: '#ff5555', label: '+q' },
+        { pos: [ 120, 0, 0], sign: -1, color: '#55aaff', label: '−q' }
+      ];
+    case 'two+':
+      return [
+        { pos: [-120, 0, 0], sign: +1, color: '#ff5555', label: '+q₁' },
+        { pos: [ 120, 0, 0], sign: +1, color: '#ff8844', label: '+q₂' }
+      ];
+  }
+}
+
+// ============================================================
+//  LIGNES DE CHAMP
+// ============================================================
+function generateRadialDirections(n) {
+  const dirs = [];
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < n; i++) {
+    const y = 1 - (i / (n - 1)) * 2;
+    const radius = Math.sqrt(1 - y * y);
+    const theta = goldenAngle * i;
+    dirs.push([Math.cos(theta) * radius, y, Math.sin(theta) * radius]);
+  }
+  return dirs;
+}
+const RADIAL_DIRS = generateRadialDirections(60);
+
+function drawChargeWithField(charge, tField, tRadiation) {
+  const [cx, cy, cz] = charge.pos;
+  const sign = charge.sign;
+  const rMax = 380;
+
+  RADIAL_DIRS.forEach(dir => {
+    const [dx, dy, dz] = dir;
+    if (sign > 0) {
+      const rEnd = rMax * tField;
+      const segments = 12;
+      for (let k = 0; k < segments; k++) {
+        const r1 = (k / segments) * rEnd;
+        const r2 = ((k + 1) / segments) * rEnd;
+        if (r2 < 1) continue;
+        const s1 = [cx + dx * r1, cy + dy * r1, cz + dz * r1];
+        const s2 = [cx + dx * r2, cy + dy * r2, cz + dz * r2];
+        const rMid = (r1 + r2) / 2 + 1;
+        const intensity = Math.min(1, 1 / (1 + rMid * rMid / 15000));
+        const alpha = intensity * 0.85;
+        drawLine3D(s1, s2, `rgba(255, 120, 120, ${alpha * tField})`, 1.4 * intensity + 0.3);
+      }
+    } else {
+      const rEnd = rMax * tField;
+      const segments = 12;
+      for (let k = 0; k < segments; k++) {
+        const r1 = (k / segments) * rEnd;
+        const r2 = ((k + 1) / segments) * rEnd;
+        const s1 = [cx + dx * r1, cy + dy * r1, cz + dz * r1];
+        const s2 = [cx + dx * r2, cy + dy * r2, cz + dz * r2];
+        const rMid = (r1 + r2) / 2 + 1;
+        const intensity = Math.min(1, 1 / (1 + rMid * rMid / 15000));
+        const alpha = intensity * 0.85;
+        drawLine3D(s2, s1, `rgba(120, 180, 255, ${alpha * tField})`, 1.4 * intensity + 0.3);
+      }
+    }
+
+    if (showRadiation && tRadiation > 0) {
+      const phase = (animProgress * 3 + (dir[0] + dir[1] + dir[2]) * 0.5) % 1;
+      const rPart = phase * rMax * tRadiation;
+      const px = cx + dx * rPart;
+      const py = cy + dy * rPart;
+      const pz = cz + dz * rPart;
+      const rNorm = Math.max(0.2, rPart / rMax);
+      const alpha = Math.pow(1 - rNorm, 1.5) * 0.9;
+      const size = Math.max(1, (1 - rNorm) * 4);
+      const p = project(px, py, pz);
+      ctx.fillStyle = sign > 0
+        ? `rgba(255, 200, 100, ${alpha * tRadiation})`
+        : `rgba(150, 200, 255, ${alpha * tRadiation})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, size * p.scale * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  drawPoint3D(cx, cy, cz, charge.color, charge.label, [14, -12], 8);
+}
+
+// ============================================================
+//  SPHÈRES DE GAUSS — rendu plus élégant
+// ============================================================
+function drawGaussianSpheres(charges, tSphere, tFlux) {
+  charges.forEach(charge => {
+    const [cx, cy, cz] = charge.pos;
+    const radii = [120, 240, 360];
+
+    // Trier les sphères : les plus lointaines d'abord
+    // (approximation : on dessine du plus grand au plus petit,
+    //  ce qui donne une meilleure lecture de la profondeur)
+    const sortedRadii = [...radii].sort((a, b) => b - a);
+
+    sortedRadii.forEach((r) => {
+      const idx = radii.indexOf(r);
+      const tLocal = clamp01((tSphere - idx * 0.15) / 0.4);
+      if (tLocal <= 0) return;
+
+      const rr = r * tLocal;
+
+      // Intensité visuelle : les sphères proches plus lumineuses
+      const baseAlpha = 0.45 * tLocal;
+
+      // --- Halo extérieur (trait large translucide) ---
+      drawSphereCircle(cx, cy, cz, rr, 'equator',
+        `rgba(100, 220, 255, ${baseAlpha * 0.20})`, 6.5);
+      drawSphereCircle(cx, cy, cz, rr, 'meridian',
+        `rgba(100, 220, 255, ${baseAlpha * 0.14})`, 5.5);
+      drawSphereCircle(cx, cy, cz, rr, 'meridian2',
+        `rgba(100, 220, 255, ${baseAlpha * 0.10})`, 5.0);
+
+      // --- Trait net par-dessus ---
+      drawSphereCircle(cx, cy, cz, rr, 'equator',
+        `rgba(150, 235, 255, ${baseAlpha * 1.0})`, 2.2);
+      drawSphereCircle(cx, cy, cz, rr, 'meridian',
+        `rgba(120, 215, 255, ${baseAlpha * 0.8})`, 1.9);
+      drawSphereCircle(cx, cy, cz, rr, 'meridian2',
+        `rgba(120, 215, 255, ${baseAlpha * 0.65})`, 1.7);
+
+      // --- Étiquette r₁, r₂, r₃ avec pastille ---
+      if (tLocal > 0.8) {
+        const labelPos = [cx + rr * 0.7, cy + rr * 0.7, cz];
+        const p = project(...labelPos);
+        const labelText = `r${idx + 1}`;
+        const s = Math.max(0.7, p.scale);
+        const fontSize = Math.round(15 * s);
+
+        ctx.save();
+        ctx.font = `italic ${fontSize}px Georgia, serif`;
+        const tw = ctx.measureText(labelText).width;
+        const padX = 8 * s;
+        const padY = 5 * s;
+        const boxW = tw + padX * 2;
+        const boxH = fontSize + padY * 2;
+        const bx = p.x + 6 * s;
+        const by = p.y - 6 * s - boxH;
+
+        // Pastille de fond
+        ctx.fillStyle = `rgba(15, 30, 40, ${0.75 * tLocal})`;
+        ctx.strokeStyle = `rgba(100, 220, 255, ${0.55 * tLocal})`;
+        ctx.lineWidth = 1;
+        roundRectPath(ctx, bx, by, boxW, boxH, 4 * s);
+        ctx.fill();
+        ctx.stroke();
+
+        // Texte
+        ctx.fillStyle = `rgba(160, 240, 255, ${0.95 * tLocal})`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = `rgba(100, 220, 255, ${0.6 * tLocal})`;
+        ctx.shadowBlur = 8;
+        ctx.fillText(labelText, bx + padX, by + boxH / 2 + 0.5);
+        ctx.restore();
+      }
+    });
+  });
+}
+
+function drawSphereCircle(cx, cy, cz, r, plane, color, lineWidth = 1.4) {
+  const segments = 96;
+  const pts = [];
+  for (let i = 0; i <= segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    let x, y, z;
+    if (plane === 'equator') { x = cx + r * Math.cos(a); y = cy; z = cz + r * Math.sin(a); }
+    else if (plane === 'meridian') { x = cx + r * Math.cos(a); y = cy + r * Math.sin(a); z = cz; }
+    else { x = cx; y = cy + r * Math.cos(a); z = cz + r * Math.sin(a); }
+    pts.push(project(x, y, z));
+  }
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ============================================================
+//  FLUX
+// ============================================================
+function drawFluxArrows(charges, tFlux) {
+  charges.forEach(charge => {
+    const [cx, cy, cz] = charge.pos;
+    const radii = [120, 240, 360];
+    const sign = charge.sign;
+    const fluxDirs = [
+      [1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0],
+      [0, 0, 1], [0, 0, -1],
+      [0.7, 0.7, 0], [-0.7, 0.7, 0], [0.7, -0.7, 0], [-0.7, -0.7, 0]
+    ];
+    fluxDirs.forEach(dir => {
+      const [dx, dy, dz] = dir;
+      const norm = Math.hypot(dx, dy, dz);
+      const ndx = dx / norm, ndy = dy / norm, ndz = dz / norm;
+      radii.forEach((r, idx) => {
+        const tLocal = clamp01((tFlux - idx * 0.1) / 0.5);
+        if (tLocal <= 0) return;
+        const px = cx + ndx * r;
+        const py = cy + ndy * r;
+        const pz = cz + ndz * r;
+        const arrowLen = 35;
+        let endX, endY, endZ;
+        if (sign > 0) { endX = px + ndx * arrowLen; endY = py + ndy * arrowLen; endZ = pz + ndz * arrowLen; }
+        else { endX = px - ndx * arrowLen; endY = py - ndy * arrowLen; endZ = pz - ndz * arrowLen; }
+        const intensity = 1 / (1 + r * r / 30000);
+        const alpha = intensity * tLocal * 0.9;
+        const a = project(px, py, pz);
+        const b = project(endX, endY, endZ);
+        ctx.strokeStyle = sign > 0 ? `rgba(255, 200, 80, ${alpha})` : `rgba(80, 200, 255, ${alpha})`;
+        ctx.lineWidth = 1.5 + intensity * 1.5;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        const ang = Math.atan2(b.y - a.y, b.x - a.x);
+        const hl = 6 + intensity * 6;
+        ctx.fillStyle = sign > 0 ? `rgba(255, 200, 80, ${alpha})` : `rgba(80, 200, 255, ${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - hl * Math.cos(ang - Math.PI / 6), b.y - hl * Math.sin(ang - Math.PI / 6));
+        ctx.lineTo(b.x - hl * Math.cos(ang + Math.PI / 6), b.y - hl * Math.sin(ang + Math.PI / 6));
+        ctx.closePath(); ctx.fill();
+      });
+    });
+  });
+}
+
+// ============================================================
+//  TITRE + ÉQUATION
+// ============================================================
+const TITLES = {
+  'single+': {
+    title: 'Champ en 1/r² — Charge positive',
+    eq: 'E(r) = k·q / r²   ·   Φ = ∮ E·dS = q / ε₀'
+  },
+  'single-': {
+    title: 'Champ en 1/r² — Charge négative',
+    eq: 'E(r) = −k·q / r²   ·   Φ = ∮ E·dS = −q / ε₀'
+  },
+  'dipole': {
+    title: 'Champ en 1/r² — Dipôle électrique',
+    eq: 'E(r) ~ 1/r²   ·   Φ_total = ∮ E·dS = 0'
+  },
+  'two+': {
+    title: 'Champ en 1/r² — Deux charges positives',
+    eq: 'E(r) = k·q₁/r² + k·q₂/r²   ·   Φ = (q₁+q₂) / ε₀'
+  }
+};
+
+function drawTitleInCanvas() {
+  if (!isRecording || !showTitleInRecording) return;
+
+  const t = TITLES[config];
+  const cx = W / 2;
+  const topY = 60;
+  const s = Math.min(W / 1920, H / 1080);
+  const sClamped = Math.max(0.6, Math.min(2.5, s));
+
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#f0f0f0';
+  ctx.font = `italic ${Math.round(34 * sClamped)}px Georgia, serif`;
+  ctx.shadowColor = 'rgba(255,255,255,0.18)';
+  ctx.shadowBlur = 20;
+  ctx.fillText(t.title, cx, topY);
+  ctx.restore();
+
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#aaccff';
+  ctx.font = `italic ${Math.round(22 * sClamped)}px Georgia, serif`;
+  ctx.shadowColor = 'rgba(120,180,255,0.25)';
+  ctx.shadowBlur = 14;
+  ctx.fillText(t.eq, cx, topY + Math.round(52 * sClamped));
+  ctx.restore();
+
+  const ruleW = 90 * sClamped;
+  const ruleY = topY + Math.round(92 * sClamped);
+  const grad = ctx.createLinearGradient(cx - ruleW/2, 0, cx + ruleW/2, 0);
+  grad.addColorStop(0, 'rgba(102,102,102,0)');
+  grad.addColorStop(0.5, 'rgba(102,102,102,1)');
+  grad.addColorStop(1, 'rgba(102,102,102,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(cx - ruleW/2, ruleY, ruleW, 1);
+}
+
+// ============================================================
+//  LÉGENDE
+// ============================================================
+function getLegendItems() {
+  const items = [];
+  if (config === 'single+') {
+    items.push({ color: '#ff5555', text: 'Charge +q — les lignes divergent' });
+  } else if (config === 'single-') {
+    items.push({ color: '#55aaff', text: 'Charge −q — les lignes convergent' });
+  } else if (config === 'dipole') {
+    items.push({ color: '#ff5555', text: 'Charge +q (gauche)' });
+    items.push({ color: '#55aaff', text: 'Charge −q (droite)' });
+  } else {
+    items.push({ color: '#ff5555', text: 'Charge +q₁ (gauche)' });
+    items.push({ color: '#ff8844', text: 'Charge +q₂ (droite)' });
+  }
+  if (showSpheres) items.push({ color: '#64dcff', text: 'Sphères de Gauss (r₁, r₂, r₃)' });
+  if (showFlux)    items.push({ color: '#ffcc55', text: 'Flux Φ — constant à travers chaque sphère' });
+  if (showRadiation) items.push({ color: '#ffcc55', text: 'Rayonnement — particules animées en 1/r²' });
+  items.push({ color: '#888', text: 'Le champ décroît comme 1/r² (loi de Coulomb / Gauss)', note: true });
+  return items;
+}
+
+function drawLegendInCanvas() {
+  if (!isRecording || !showLegendInRecording) return;
+
+  const items = getLegendItems();
+  const s = Math.min(W / 1920, H / 1080);
+  const sClamped = Math.max(0.6, Math.min(2.5, s));
+
+  const padding = Math.round(18 * sClamped);
+  const lineHeight = Math.round(30 * sClamped);
+  const dotRadius = Math.round(8 * sClamped);
+  const fontSize = Math.round(18 * sClamped);
+  const noteFontSize = Math.round(16 * sClamped);
+  const textPadding = Math.round(16 * sClamped);
+
+  ctx.save();
+  let maxW = 0;
+  items.forEach(item => {
+    ctx.font = `${item.note ? noteFontSize : fontSize}px Georgia, serif`;
+    const w = ctx.measureText(item.text).width;
+    if (w > maxW) maxW = w;
+  });
+  ctx.restore();
+
+  const panelW = maxW + padding * 2 + dotRadius * 2 + textPadding;
+  const panelH = padding * 2 + items.length * lineHeight;
+  const panelX = (W - panelW) / 2;
+  const panelY = H - panelH - Math.round(30 * sClamped);
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(18, 18, 24, 0.85)';
+  ctx.strokeStyle = 'rgba(90, 90, 110, 0.5)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, 10 * sClamped);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  items.forEach((item, i) => {
+    const y = panelY + padding + i * lineHeight + lineHeight / 2;
+    const dotX = panelX + padding + dotRadius;
+    const textX = dotX + dotRadius + textPadding;
+
+    ctx.fillStyle = item.color;
+    ctx.beginPath();
+    ctx.arc(dotX, y, dotRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    ctx.arc(dotX, y, dotRadius + 4 * sClamped, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = item.note ? '#aaa' : '#ddd';
+    ctx.font = `${item.note ? 'italic ' : ''}${item.note ? noteFontSize : fontSize}px Georgia, serif`;
+    ctx.fillText(item.text, textX, y + 1);
+  });
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ============================================================
+//  BOUCLE PRINCIPALE
+// ============================================================
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+function clamp01(x) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  return easeOutCubic(x);
+}
+
+function drawScene(now) {
+  if (animStartTime === null) animStartTime = now;
+  if (!animDone) {
+    const elapsed = now - animStartTime;
+    animProgress = Math.min(elapsed / appearanceDuration, 1);
+    if (animProgress >= 1) animDone = true;
+  }
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  drawFloorGrid();
+
+  const charges = getCharges();
+  const tField    = clamp01((animProgress - 0.00) / 0.35);
+  const tSphere   = clamp01((animProgress - 0.30) / 0.30);
+  const tFlux     = clamp01((animProgress - 0.55) / 0.25);
+  const tRadiation = clamp01((animProgress - 0.70) / 0.30);
+
+  charges.forEach(c => drawChargeWithField(c, tField, tRadiation));
+
+  if (showSpheres && tSphere > 0) drawGaussianSpheres(charges, tSphere, tFlux);
+  if (showFlux && tFlux > 0) drawFluxArrows(charges, tFlux);
+
+  // Titre + légende dans le canvas UNIQUEMENT pendant l'enregistrement
+  // (hors enregistrement, ce sont les overlays HTML qui s'en chargent)
+  if (isRecording) {
+    drawTitleInCanvas();
+    drawLegendInCanvas();
+  }
+
+  requestAnimationFrame(drawScene);
+}
+
+// ============================================================
+//  ROTATION 3D
+// ============================================================
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  canvas.classList.add('dragging');
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  camTheta += dx * 0.008 * rotationSpeed;
+  camPhi   -= dy * 0.008 * rotationSpeed;
+  camPhi = Math.max(PHI_MIN, Math.min(PHI_MAX, camPhi));
+});
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    lastMouseX = e.touches[0].clientX;
+    lastMouseY = e.touches[0].clientY;
+    canvas.classList.add('dragging');
+  }
+}, { passive: true });
+canvas.addEventListener('touchmove', (e) => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - lastMouseX;
+  const dy = e.touches[0].clientY - lastMouseY;
+  lastMouseX = e.touches[0].clientX;
+  lastMouseY = e.touches[0].clientY;
+  camTheta += dx * 0.008 * rotationSpeed;
+  camPhi   -= dy * 0.008 * rotationSpeed;
+  camPhi = Math.max(PHI_MIN, Math.min(PHI_MAX, camPhi));
+}, { passive: true });
+canvas.addEventListener('touchend', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+
+// ============================================================
+//  PANNEAU DRAG & DROP
+// ============================================================
+const panel = document.getElementById('panel');
+const panelHeader = document.getElementById('panelHeader');
+const collapseBtn = document.getElementById('collapseBtn');
+let panelDragging = false;
+let panelOffsetX = 0, panelOffsetY = 0;
+
+panelHeader.addEventListener('mousedown', (e) => {
+  if (e.target === collapseBtn) return;
+  panelDragging = true;
+  const rect = panel.getBoundingClientRect();
+  panelOffsetX = e.clientX - rect.left;
+  panelOffsetY = e.clientY - rect.top;
+  e.stopPropagation();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!panelDragging) return;
+  panel.style.left = (e.clientX - panelOffsetX) + 'px';
+  panel.style.top  = (e.clientY - panelOffsetY) + 'px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+});
+window.addEventListener('mouseup', () => { panelDragging = false; });
+
+panelHeader.addEventListener('touchstart', (e) => {
+  if (e.target === collapseBtn) return;
+  panelDragging = true;
+  const rect = panel.getBoundingClientRect();
+  panelOffsetX = e.touches[0].clientX - rect.left;
+  panelOffsetY = e.touches[0].clientY - rect.top;
+  e.stopPropagation();
+}, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (!panelDragging) return;
+  panel.style.left = (e.touches[0].clientX - panelOffsetX) + 'px';
+  panel.style.top  = (e.touches[0].clientY - panelOffsetY) + 'px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+}, { passive: true });
+window.addEventListener('touchend', () => { panelDragging = false; });
+
+collapseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  panel.classList.toggle('collapsed');
+  collapseBtn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+});
+
+// ============================================================
+//  LÉGENDE HTML DÉPLAÇABLE
+// ============================================================
+const legend = document.getElementById('legend');
+const legendItems = document.getElementById('legendItems');
+let legendDragging = false;
+let legendOffsetX = 0, legendOffsetY = 0;
+
+function updateLegendContent() {
+  legendItems.innerHTML = getLegendItems().map(item =>
+    `<div class="legend-item${item.note ? ' legend-note' : ''}">
+      <span class="legend-dot" style="background:${item.color};"></span>
+      <span>${item.text}</span>
+    </div>`
+  ).join('');
+}
+
+legend.addEventListener('mousedown', (e) => {
+  legendDragging = true;
+  const rect = legend.getBoundingClientRect();
+  legendOffsetX = e.clientX - rect.left;
+  legendOffsetY = e.clientY - rect.top;
+  e.stopPropagation();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!legendDragging) return;
+  legend.style.left = (e.clientX - legendOffsetX) + 'px';
+  legend.style.top  = (e.clientY - legendOffsetY) + 'px';
+  legend.style.right = 'auto';
+  legend.style.bottom = 'auto';
+  legend.style.transform = 'none';
+});
+window.addEventListener('mouseup', () => { legendDragging = false; });
+
+legend.addEventListener('touchstart', (e) => {
+  legendDragging = true;
+  const rect = legend.getBoundingClientRect();
+  legendOffsetX = e.touches[0].clientX - rect.left;
+  legendOffsetY = e.touches[0].clientY - rect.top;
+  e.stopPropagation();
+}, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (!legendDragging) return;
+  legend.style.left = (e.touches[0].clientX - legendOffsetX) + 'px';
+  legend.style.top  = (e.touches[0].clientY - legendOffsetY) + 'px';
+  legend.style.right = 'auto';
+  legend.style.bottom = 'auto';
+  legend.style.transform = 'none';
+}, { passive: true });
+window.addEventListener('touchend', () => { legendDragging = false; });
+
+// ============================================================
+//  TITRE HTML
+// ============================================================
+const figCaption = document.getElementById('figCaption');
+const figEquation = document.getElementById('figEquation');
+
+function updateTitleAndEquation() {
+  const t = TITLES[config];
+  figCaption.textContent = t.title;
+  figEquation.textContent = t.eq;
+}
+
+// ============================================================
+//  CHANGEMENT DE CONFIG
+// ============================================================
+const configSelect = document.getElementById('configSelect');
+
+function setConfig(newConfig) {
+  if (!CONFIGS.includes(newConfig)) return;
+  config = newConfig;
+  configSelect.value = config;
+  updateTitleAndEquation();
+  updateLegendContent();
+  resetAnimation();
+}
+
+configSelect.addEventListener('change', () => setConfig(configSelect.value));
+
+// ============================================================
+//  CONTRÔLES
+// ============================================================
+document.getElementById('showSpheres').addEventListener('change', (e) => {
+  showSpheres = e.target.checked;
+  updateLegendContent();
+});
+document.getElementById('showFlux').addEventListener('change', (e) => {
+  showFlux = e.target.checked;
+  updateLegendContent();
+});
+document.getElementById('showRadiation').addEventListener('change', (e) => {
+  showRadiation = e.target.checked;
+  updateLegendContent();
+});
+document.getElementById('showTitleRec').addEventListener('change', (e) => { showTitleInRecording = e.target.checked; });
+document.getElementById('showLegendRec').addEventListener('change', (e) => { showLegendInRecording = e.target.checked; });
+
+const durationSlider = document.getElementById('durationSlider');
+const durationValue = document.getElementById('durationValue');
+durationSlider.addEventListener('input', () => {
+  appearanceDuration = parseInt(durationSlider.value);
+  durationValue.textContent = (appearanceDuration / 1000).toFixed(1) + 's';
+});
+
+const rotSpeedSlider = document.getElementById('rotSpeed');
+const rotSpeedValue = document.getElementById('rotSpeedValue');
+rotSpeedSlider.addEventListener('input', () => {
+  rotationSpeed = parseFloat(rotSpeedSlider.value);
+  rotSpeedValue.textContent = rotationSpeed.toFixed(2);
+});
+
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomValue = document.getElementById('zoomValue');
+zoomSlider.addEventListener('input', () => {
+  zoomFactor = parseFloat(zoomSlider.value);
+  zoomValue.textContent = zoomFactor.toFixed(2);
+});
+
+function resetAnimation() {
+  animStartTime = null;
+  animProgress = 0;
+  animDone = false;
+}
+document.getElementById('replayBtn').addEventListener('click', resetAnimation);
+
+// ============================================================
+//  ENREGISTREMENT VIDÉO
+// ============================================================
+const recordingBtn = document.getElementById('recordingBtn');
+const recordingExit = document.getElementById('recordingExit');
+const recTimeEl = document.getElementById('recTime');
+const resSelect = document.getElementById('resSelect');
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingStartTime = 0;
+let recordingTimerInterval = null;
+let isRecording = false;
+
+let savedW = 0, savedH = 0;
+
+function formatTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `REC ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function pickBestMimeType() {
+  const candidates = [
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4;codecs=h264',
+    'video/mp4'
+  ];
+  for (const c of candidates) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+  }
+  return '';
+}
+
+function applyRecordingResolution() {
+  const val = resSelect.value;
+  if (val === 'auto') {
+    recordingResolution = null;
+  } else {
+    const h = parseInt(val);
+    const w = Math.round(h * 16 / 9);
+    recordingResolution = { w, h };
+  }
+}
+
+function startRecording() {
+  if (isRecording) return;
+
+  resetAnimation();
+  applyRecordingResolution();
+
+  savedW = W;
+  savedH = H;
+
+  if (recordingResolution) {
+    W = canvas.width = recordingResolution.w;
+    H = canvas.height = recordingResolution.h;
+    canvas.style.width = savedW + 'px';
+    canvas.style.height = savedH + 'px';
+  }
+
+  isRecording = true;
+  document.body.classList.add('recording');
+
+  const stream = canvas.captureStream(60);
+  const mimeType = pickBestMimeType();
+
+  if (!mimeType) {
+    alert("Votre navigateur ne supporte pas l'enregistrement vidéo via MediaRecorder.");
+    isRecording = false;
+    document.body.classList.remove('recording');
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+    return;
+  }
+
+  let bitrate = 20_000_000;
+  if (recordingResolution && recordingResolution.h >= 2160) bitrate = 60_000_000;
+  else if (recordingResolution && recordingResolution.h >= 1440) bitrate = 35_000_000;
+  else if (recordingResolution && recordingResolution.h >= 1080) bitrate = 20_000_000;
+
+  try {
+    mediaRecorder = new MediaRecorder(stream, {
+      mimeType: mimeType,
+      videoBitsPerSecond: bitrate
+    });
+  } catch (err) {
+    alert("Impossible de démarrer l'enregistrement : " + err.message);
+    isRecording = false;
+    document.body.classList.remove('recording');
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+    return;
+  }
+
+  recordedChunks = [];
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: mimeType.split(';')[0] });
+    const url = URL.createObjectURL(blob);
+
+    const now = new Date();
+    const stamp = now.getFullYear()
+      + String(now.getMonth()+1).padStart(2,'0')
+      + String(now.getDate()).padStart(2,'0') + '_'
+      + String(now.getHours()).padStart(2,'0')
+      + String(now.getMinutes()).padStart(2,'0')
+      + String(now.getSeconds()).padStart(2,'0');
+
+    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const resTag = recordingResolution ? `${recordingResolution.h}p` : 'auto';
+    const filename = `gauss_${config}_${resTag}_${stamp}.${ext}`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    recordedChunks = [];
+    mediaRecorder = null;
+
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+  };
+
+  mediaRecorder.start(100);
+  recordingStartTime = performance.now();
+  recTimeEl.textContent = 'REC 00:00';
+
+  recordingTimerInterval = setInterval(() => {
+    const elapsed = performance.now() - recordingStartTime;
+    recTimeEl.textContent = formatTime(elapsed);
+  }, 200);
+}
+
+function stopRecordingAndDownload() {
+  if (!isRecording) return;
+  isRecording = false;
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (recordingTimerInterval) {
+    clearInterval(recordingTimerInterval);
+    recordingTimerInterval = null;
+  }
+
+  document.body.classList.remove('recording');
+}
+
+recordingBtn.addEventListener('click', startRecording);
+recordingExit.addEventListener('click', stopRecordingAndDownload);
+
+// ============================================================
+//  CLAVIER
+// ============================================================
+window.addEventListener('keydown', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    const idx = CONFIGS.indexOf(config);
+    const newIdx = e.key === 'ArrowRight'
+      ? (idx + 1) % CONFIGS.length
+      : (idx - 1 + CONFIGS.length) % CONFIGS.length;
+    setConfig(CONFIGS[newIdx]);
+    return;
+  }
+  if (e.key === '1') setConfig('single+');
+  if (e.key === '2') setConfig('single-');
+  if (e.key === '3') setConfig('dipole');
+  if (e.key === '4') setConfig('two+');
+
+  if (e.key === ' ') { e.preventDefault(); resetAnimation(); }
+  if (e.key === 'Escape' && isRecording) stopRecordingAndDownload();
+});
+
+// ============================================================
+//  INITIALISATION
+// ============================================================
+updateTitleAndEquation();
+updateLegendContent();
+requestAnimationFrame(drawScene);
+</script>
+</body>
+</html>

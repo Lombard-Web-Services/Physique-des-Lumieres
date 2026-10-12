@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Parallélépipède des forces — Concourantes & Non concourantes</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #000; overflow: hidden;
+    height: 100%;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #ddd; user-select: none;
+  }
+  canvas { display: block; cursor: grab; }
+  canvas.dragging { cursor: none; }
+
+  #figureTitle {
+    position: fixed; top: 30px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center; pointer-events: none;
+    z-index: 5; transition: opacity 0.3s;
+  }
+  #figureTitle .fig-name {
+    display: block; color: #f0f0f0; font-size: 30px;
+    font-style: italic; letter-spacing: 1.5px;
+    font-weight: normal;
+    text-shadow: 0 0 20px rgba(255,255,255,0.18);
+  }
+  #figureTitle .fig-equation {
+    display: block; color: #aaccff; font-size: 20px;
+    font-style: italic; letter-spacing: 1px; margin-top: 10px;
+    text-shadow: 0 0 14px rgba(120,180,255,0.25);
+  }
+  #figureTitle .fig-rule {
+    width: 90px; height: 1px;
+    background: linear-gradient(to right, transparent, #666, transparent);
+    margin: 14px auto 0;
+  }
+
+  #panel {
+    position: fixed; top: 20px; left: 20px;
+    background: rgba(18, 18, 24, 0.92);
+    border: 1px solid #3a3a44; border-radius: 10px;
+    padding: 16px 18px; width: 290px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+    z-index: 10; font-size: 13px;
+    transition: width 0.25s ease, padding 0.25s ease, opacity 0.3s;
+    overflow: hidden;
+  }
+  #panel.collapsed { width: 48px; padding: 10px 8px; }
+  #panel.collapsed .panel-body,
+  #panel.collapsed h3 .title-text { display: none; }
+  #panel.collapsed h3 { justify-content: center; border-bottom: none; padding-bottom: 0; margin: 0; }
+  #panel h3 {
+    margin: 0 0 12px 0; font-size: 13px; color: #fff;
+    font-weight: normal; letter-spacing: 2px;
+    text-transform: uppercase; cursor: move;
+    border-bottom: 1px solid #3a3a44;
+    padding-bottom: 10px; display: flex;
+    justify-content: space-between; align-items: center; gap: 8px;
+  }
+  #panel h3 .title-text { flex: 1; }
+  #panel h3 .collapse-btn {
+    background: transparent; border: 1px solid #555;
+    color: #aaa; width: 22px; height: 22px;
+    border-radius: 4px; cursor: pointer;
+    font-size: 13px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; transition: all 0.15s; flex-shrink: 0;
+  }
+  #panel h3 .collapse-btn:hover { background: #333; color: #fff; border-color: #888; }
+  #panel h3 span.grip { color: #666; font-size: 16px; letter-spacing: 0; }
+  #panel .row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; gap: 10px; }
+  #panel label { flex: 1; color: #999; font-size: 12px; letter-spacing: 0.5px; }
+  #panel input[type="range"] { flex: 1.2; accent-color: #55ff88; height: 4px; }
+  #panel select {
+    flex: 1.4; background: #22222a; color: #fff;
+    border: 1px solid #444; padding: 6px 8px;
+    border-radius: 5px; font-family: inherit;
+    font-size: 12px; cursor: pointer;
+  }
+  #panel .value {
+    width: 55px; text-align: right; color: #55ff88;
+    font-variant-numeric: tabular-nums; font-size: 12px;
+  }
+  #panel button {
+    width: 100%; margin-top: 12px; background: #22222a;
+    color: #ddd; border: 1px solid #444; padding: 8px;
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  #panel button:hover { background: #2e2e3a; border-color: #666; color: #fff; }
+  #panel .hint {
+    font-size: 11px; color: #666; margin-top: 12px;
+    line-height: 1.5; border-top: 1px solid #2a2a33;
+    padding-top: 10px; font-style: italic;
+  }
+  #panel .checkbox-row { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+  #panel .checkbox-row input { accent-color: #55ff88; cursor: pointer; }
+  #panel .checkbox-row label { cursor: pointer; flex: 1; }
+  #panel .section-title {
+    font-size: 11px; color: #666; text-transform: uppercase;
+    letter-spacing: 1.5px; margin: 14px 0 6px 0;
+    border-top: 1px solid #2a2a33; padding-top: 10px;
+  }
+
+  #legend {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 18, 24, 0.85);
+    border: 1px solid rgba(90, 90, 110, 0.5);
+    border-radius: 10px; padding: 18px 22px;
+    z-index: 9; cursor: move;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    transition: opacity 0.3s;
+    max-width: 640px;
+  }
+  #legend .legend-item {
+    display: flex; align-items: center; gap: 14px;
+    margin: 10px 0; font-size: 16px; color: #ddd; line-height: 1.4;
+  }
+  #legend .legend-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    flex-shrink: 0; position: relative;
+  }
+  #legend .legend-dot::after {
+    content: ''; position: absolute; inset: -4px;
+    border-radius: 50%; background: inherit; opacity: 0.25;
+  }
+  #legend .legend-item.legend-note {
+    font-style: italic; font-size: 14px; color: #aaa;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(120,120,140,0.3);
+  }
+  #legend .legend-handle {
+    font-size: 11px; color: #666; text-align: center;
+    margin-bottom: 4px; letter-spacing: 1px;
+    text-transform: uppercase; cursor: move;
+  }
+
+  body.recording #panel { opacity: 0 !important; pointer-events: none !important; }
+  body.recording #legend { opacity: 0 !important; pointer-events: none !important; }
+  body.recording #figureTitle { opacity: 0 !important; }
+
+  #recordingExit {
+    display: none; position: fixed; top: 16px; right: 16px;
+    z-index: 100; background: rgba(200, 40, 40, 0.85); color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 1px; text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+  body.recording #recordingExit { display: block; }
+  #recordingExit:hover { background: rgba(230, 60, 60, 0.95); }
+
+  #recIndicator {
+    display: none; position: fixed; top: 16px; left: 16px;
+    z-index: 100; background: rgba(30, 0, 0, 0.85); color: #fff;
+    border: 1px solid rgba(255, 60, 60, 0.6);
+    padding: 8px 14px; border-radius: 6px;
+    font-family: 'Courier New', monospace; font-size: 13px;
+    letter-spacing: 1px; backdrop-filter: blur(4px);
+    align-items: center; gap: 10px;
+  }
+  body.recording #recIndicator { display: flex; }
+  #recIndicator .rec-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #ff2222; animation: rec-pulse 1s infinite;
+  }
+  @keyframes rec-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.85); }
+  }
+
+  #recordingNav {
+    display: none; position: fixed; bottom: 16px; right: 16px;
+    z-index: 100; background: rgba(18, 18, 24, 0.85); color: #aaa;
+    border: 1px solid rgba(90,90,110,0.5);
+    padding: 8px 14px; border-radius: 6px;
+    font-family: inherit; font-size: 12px;
+    letter-spacing: 0.5px; backdrop-filter: blur(4px);
+    pointer-events: none;
+  }
+  body.recording #recordingNav { display: block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div id="figureTitle">
+  <span class="fig-name" id="figCaption">Parallélépipède des forces — Concourantes</span>
+  <span class="fig-equation" id="figEquation"></span>
+  <div class="fig-rule"></div>
+</div>
+
+<div id="panel">
+  <h3 id="panelHeader">
+    <span class="title-text">Paramètres</span>
+    <span class="grip">⠿</span>
+    <button class="collapse-btn" id="collapseBtn" title="Réduire / déplier">−</button>
+  </h3>
+
+  <div class="panel-body">
+    <div class="row">
+      <label>Mode</label>
+      <select id="modeSelect">
+        <option value="concurrent">Forces concourantes</option>
+        <option value="nonconcurrent">Forces non concourantes</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Durée</label>
+      <input type="range" id="durationSlider" min="200" max="10000" step="100" value="4500">
+      <span class="value" id="durationValue">4.5s</span>
+    </div>
+    <div class="row">
+      <label>Rotation</label>
+      <input type="range" id="rotSpeed" min="0.1" max="2" step="0.05" value="0.6">
+      <span class="value" id="rotSpeedValue">0.6</span>
+    </div>
+    <div class="row">
+      <label>Zoom</label>
+      <input type="range" id="zoomSlider" min="0.4" max="2" step="0.05" value="1">
+      <span class="value" id="zoomValue">1.0</span>
+    </div>
+
+    <div class="section-title">Enregistrement</div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showTitleRec" checked>
+      <label for="showTitleRec">Afficher le titre + équation</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="showLegendRec" checked>
+      <label for="showLegendRec">Afficher la légende</label>
+    </div>
+    <div class="row">
+      <label>Résolution</label>
+      <select id="resSelect">
+        <option value="auto">Auto (fenêtre)</option>
+        <option value="1080">1920 × 1080 (Full HD)</option>
+        <option value="1440">2560 × 1440 (QHD)</option>
+        <option value="2160">3840 × 2160 (4K)</option>
+      </select>
+    </div>
+
+    <button id="replayBtn">↻ Rejouer l'apparition</button>
+    <button id="recordingBtn">🎥 Enregistrer en vidéo</button>
+    <div class="hint">
+      Clic + glisser sur le fond pour tourner en 3D.<br>
+      En mode enregistrement : flèches ← → pour changer de mode.<br>
+      Le titre et la légende sont inclus dans la vidéo.
+    </div>
+  </div>
+</div>
+
+<button id="recordingExit">■ Arrêter &amp; télécharger</button>
+
+<div id="recIndicator">
+  <div class="rec-dot"></div>
+  <span id="recTime">REC 00:00</span>
+</div>
+
+<div id="recordingNav">← → : changer de mode</div>
+
+<div id="legend">
+  <div class="legend-handle">⠿ Légende</div>
+  <div id="legendItems"></div>
+</div>
+
+<script>
+// ============================================================
+//  CANVAS
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+let recordingResolution = null;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', () => { if (!isRecording) resize(); });
+resize();
+
+// ============================================================
+//  PARAMÈTRES
+// ============================================================
+const MODES = ['concurrent', 'nonconcurrent'];
+let mode = 'concurrent';
+let appearanceDuration = 4500;
+let rotationSpeed = 0.6;
+let zoomFactor = 1.0;
+
+let showTitleInRecording = true;
+let showLegendInRecording = true;
+
+// ============================================================
+//  ÉTAT ANIMATION
+// ============================================================
+let animStartTime = null;
+let animProgress = 0;
+let animDone = false;
+
+// ============================================================
+//  CAMÉRA
+// ============================================================
+let camTheta = 0.5;
+let camPhi = 0.25;
+let isDragging = false;
+let lastMouseX = 0, lastMouseY = 0;
+const PHI_MIN = -Math.PI / 2 + 0.05;
+const PHI_MAX =  Math.PI / 2 - 0.05;
+
+// ============================================================
+//  GÉOMÉTRIE — LES TROIS FORCES
+// ============================================================
+const Pvec = [ 200,   0,   0];
+const Qvec = [   0, -180,   0];
+const Svec = [   0,   0,  160];
+const Rvec = [
+  Pvec[0] + Qvec[0] + Svec[0],
+  Pvec[1] + Qvec[1] + Svec[1],
+  Pvec[2] + Qvec[2] + Svec[2]
+];
+
+const A_pt = [0, 0, 0];
+const B_pt = [Pvec[0], Pvec[1], Pvec[2]];
+const C_pt = [Qvec[0], Qvec[1], Qvec[2]];
+const D_pt = [Svec[0], Svec[1], Svec[2]];
+const E_pt = [Pvec[0]+Qvec[0], Pvec[1]+Qvec[1], Pvec[2]+Qvec[2]];
+const F_pt = [Pvec[0]+Svec[0], Pvec[1]+Svec[1], Pvec[2]+Svec[2]];
+const G_pt = [Qvec[0]+Svec[0], Qvec[1]+Svec[1], Qvec[2]+Svec[2]];
+const H_pt = [Rvec[0], Rvec[1], Rvec[2]];
+
+// Centre du parallélépipède : c'est autour de ce point que la caméra tourne
+const CENTER = [Rvec[0]/2, Rvec[1]/2, Rvec[2]/2];
+
+// ============================================================
+//  PROJECTION 3D (centrée sur CENTER)
+// ============================================================
+const FOCAL = 900;
+function project(x, y, z) {
+  const tx = x - CENTER[0];
+  const ty = y - CENTER[1];
+  const tz = z - CENTER[2];
+
+  const cosT = Math.cos(camTheta), sinT = Math.sin(camTheta);
+  let x1 =  tx * cosT + tz * sinT;
+  let z1 = -tx * sinT + tz * cosT;
+  let y1 =  ty;
+
+  const cosP = Math.cos(camPhi), sinP = Math.sin(camPhi);
+  let y2 = y1 * cosP - z1 * sinP;
+  let z2 = y1 * sinP + z1 * cosP;
+  let x2 = x1;
+
+  const camDist = 700;
+  const zCam = z2 + camDist;
+  const scale = (FOCAL / zCam) * zoomFactor;
+
+  return { x: W / 2 + x2 * scale, y: H / 2 - y2 * scale, z: zCam, scale };
+}
+
+// ============================================================
+//  DESSIN FLÈCHE 3D
+// ============================================================
+function drawArrow3D(x1, y1, z1, x2, y2, z2, color, label, t, opts = {}) {
+  const ex = x1 + (x2 - x1) * t;
+  const ey = y1 + (y2 - y1) * t;
+  const ez = z1 + (z2 - z1) * t;
+
+  const p1 = project(x1, y1, z1);
+  const p2 = project(ex, ey, ez);
+
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 1) return;
+
+  const angle = Math.atan2(dy, dx);
+  const headLen = (opts.headLen || 16) * p2.scale;
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = (opts.lineWidth || 2.8) * p2.scale;
+  ctx.lineCap = 'round';
+  if (opts.dashed) ctx.save(), ctx.setLineDash([8, 6]);
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+  if (opts.dashed) ctx.restore();
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(p2.x, p2.y);
+  ctx.lineTo(
+    p2.x - headLen * Math.cos(angle - Math.PI / 7),
+    p2.y - headLen * Math.sin(angle - Math.PI / 7)
+  );
+  ctx.lineTo(
+    p2.x - headLen * Math.cos(angle + Math.PI / 7),
+    p2.y - headLen * Math.sin(angle + Math.PI / 7)
+  );
+  ctx.closePath();
+  ctx.fill();
+
+  if (label && t > 0.5) {
+    const alpha = Math.min(1, (t - 0.5) * 2);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    const fontSize = Math.max(14, Math.round(22 * p2.scale));
+    ctx.font = `italic ${fontSize}px Georgia, serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const offset = 20 * p2.scale;
+    ctx.fillText(
+      label,
+      p2.x + Math.cos(angle) * offset,
+      p2.y + Math.sin(angle) * offset
+    );
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ============================================================
+//  DESSIN SEGMENT 3D
+// ============================================================
+function drawSegment3D(p1, p2, color, t, opts = {}) {
+  if (t <= 0) return;
+  const ex = p1[0] + (p2[0] - p1[0]) * t;
+  const ey = p1[1] + (p2[1] - p1[1]) * t;
+  const ez = p1[2] + (p2[2] - p1[2]) * t;
+
+  const a = project(...p1);
+  const b = project(ex, ey, ez);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = (opts.lineWidth || 1.6) * b.scale;
+  ctx.lineCap = 'round';
+  if (opts.dashed) ctx.setLineDash([7, 7]);
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ============================================================
+//  DESSIN POINT 3D
+// ============================================================
+function drawPoint3D(x, y, z, color, label, offsetLabel = [12, -10]) {
+  const p = project(x, y, z);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 5 * p.scale, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (label) {
+    ctx.fillStyle = color;
+    const fontA = Math.max(14, Math.round(22 * p.scale));
+    ctx.font = `italic ${fontA}px Georgia, serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(label, p.x + offsetLabel[0] * p.scale, p.y + offsetLabel[1] * p.scale);
+  }
+}
+
+// ============================================================
+//  GRILLE DE SOL (centrée sur le centre du parallélépipède)
+// ============================================================
+function drawFloorGrid() {
+  const gridSize = 500;
+  const step = 100;
+  const yFloor = -300;
+  ctx.strokeStyle = 'rgba(80, 80, 100, 0.18)';
+  ctx.lineWidth = 1;
+  for (let i = -gridSize; i <= gridSize; i += step) {
+    let p1 = project(i, yFloor, -gridSize);
+    let p2 = project(i, yFloor,  gridSize);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+
+    p1 = project(-gridSize, yFloor, i);
+    p2 = project( gridSize, yFloor, i);
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+  }
+}
+
+// ============================================================
+//  DESSIN DU PARALLÉLÉPIPÈDE
+// ============================================================
+function drawParallelepiped(tSkeleton) {
+  const edges = [
+    [A_pt, B_pt], [B_pt, E_pt], [E_pt, C_pt], [C_pt, A_pt],
+    [D_pt, F_pt], [F_pt, H_pt], [H_pt, G_pt], [G_pt, D_pt],
+    [A_pt, D_pt], [B_pt, F_pt], [C_pt, G_pt], [E_pt, H_pt]
+  ];
+
+  edges.forEach(e => {
+    drawSegment3D(e[0], e[1], 'rgba(140, 140, 170, 0.4)', tSkeleton, { dashed: false, lineWidth: 1.5 });
+  });
+}
+
+// ============================================================
+//  MODE CONCOURANT
+// ============================================================
+function drawConcurrent() {
+  const tSkel = clamp01((animProgress - 0.00) / 0.20);
+  drawParallelepiped(tSkel);
+
+  const tP = clamp01((animProgress - 0.15) / 0.20);
+  const tQ = clamp01((animProgress - 0.25) / 0.20);
+  const tS = clamp01((animProgress - 0.35) / 0.20);
+
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Pvec[0], Pvec[1], Pvec[2], '#ff5555', 'P', tP);
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Qvec[0], Qvec[1], Qvec[2], '#55aaff', 'Q', tQ);
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Svec[0], Svec[1], Svec[2], '#ffcc55', 'S', tS);
+
+  const tR = clamp01((animProgress - 0.60) / 0.35);
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Rvec[0], Rvec[1], Rvec[2], '#55ff88', 'R', tR);
+
+  drawPoint3D(A_pt[0], A_pt[1], A_pt[2], '#ffffff', 'A');
+  drawPoint3D(H_pt[0], H_pt[1], H_pt[2], '#55ff88', 'H', [12, -10]);
+}
+
+// ============================================================
+//  MODE NON CONCOURANT
+// ============================================================
+function drawNonConcurrent() {
+  const tSkel = clamp01((animProgress - 0.00) / 0.20);
+  drawParallelepiped(tSkel);
+
+  const tP = clamp01((animProgress - 0.15) / 0.15);
+  const tQ = clamp01((animProgress - 0.25) / 0.15);
+  const tS = clamp01((animProgress - 0.35) / 0.15);
+
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2],
+              A_pt[0] + Pvec[0], A_pt[1] + Pvec[1], A_pt[2] + Pvec[2],
+              '#ff5555', 'P', tP);
+
+  drawArrow3D(B_pt[0], B_pt[1], B_pt[2],
+              B_pt[0] + Qvec[0], B_pt[1] + Qvec[1], B_pt[2] + Qvec[2],
+              '#55aaff', 'Q', tQ);
+
+  drawArrow3D(E_pt[0], E_pt[1], E_pt[2],
+              E_pt[0] + Svec[0], E_pt[1] + Svec[1], E_pt[2] + Svec[2],
+              '#ffcc55', 'S', tS);
+
+  const tTrans = clamp01((animProgress - 0.55) / 0.20);
+
+  drawSegment3D(
+    [B_pt[0], B_pt[1], B_pt[2]],
+    [B_pt[0] + Qvec[0], B_pt[1] + Qvec[1], B_pt[2] + Qvec[2]],
+    'rgba(85,170,255,0.25)', tTrans, { dashed: true, lineWidth: 1.2 });
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Qvec[0], Qvec[1], Qvec[2],
+              'rgba(85,170,255,0.55)', null, tTrans, { dashed: true, lineWidth: 2 });
+
+  drawSegment3D(
+    [E_pt[0], E_pt[1], E_pt[2]],
+    [E_pt[0] + Svec[0], E_pt[1] + Svec[1], E_pt[2] + Svec[2]],
+    'rgba(255,204,85,0.25)', tTrans, { dashed: true, lineWidth: 1.2 });
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Svec[0], Svec[1], Svec[2],
+              'rgba(255,204,85,0.55)', null, tTrans, { dashed: true, lineWidth: 2 });
+
+  const tR = clamp01((animProgress - 0.75) / 0.25);
+  drawArrow3D(A_pt[0], A_pt[1], A_pt[2], Rvec[0], Rvec[1], Rvec[2], '#55ff88', 'R', tR);
+
+  drawPoint3D(A_pt[0], A_pt[1], A_pt[2], '#ffffff', 'A');
+  drawPoint3D(B_pt[0], B_pt[1], B_pt[2], '#ff5555', 'B', [12, -10]);
+  drawPoint3D(E_pt[0], E_pt[1], E_pt[2], '#55aaff', 'E', [12, -10]);
+  drawPoint3D(H_pt[0], H_pt[1], H_pt[2], '#55ff88', 'H', [12, -10]);
+}
+
+// ============================================================
+//  TITRE + ÉQUATION
+// ============================================================
+const TITLES = {
+  'concurrent': {
+    title: 'Parallélépipède des forces — Concourantes',
+    eq: 'R = P + Q + S   ·   |R| = √(P² + Q² + S²)'
+  },
+  'nonconcurrent': {
+    title: 'Parallélépipède des forces — Non concourantes',
+    eq: 'R = ΣFᵢ   ·   M_A = Σ (rᵢ × Fᵢ)'
+  }
+};
+
+function drawTitleInCanvas() {
+  if (!isRecording || !showTitleInRecording) return;
+
+  const t = TITLES[mode];
+  const cx = W / 2;
+  const topY = 60;
+  const s = Math.min(W / 1920, H / 1080);
+  const sClamped = Math.max(0.6, Math.min(2.5, s));
+
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#f0f0f0';
+  ctx.font = `italic ${Math.round(34 * sClamped)}px Georgia, serif`;
+  ctx.shadowColor = 'rgba(255,255,255,0.18)';
+  ctx.shadowBlur = 20;
+  ctx.fillText(t.title, cx, topY);
+  ctx.restore();
+
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = '#aaccff';
+  ctx.font = `italic ${Math.round(22 * sClamped)}px Georgia, serif`;
+  ctx.shadowColor = 'rgba(120,180,255,0.25)';
+  ctx.shadowBlur = 14;
+  ctx.fillText(t.eq, cx, topY + Math.round(52 * sClamped));
+  ctx.restore();
+
+  const ruleW = 90 * sClamped;
+  const ruleY = topY + Math.round(92 * sClamped);
+  const grad = ctx.createLinearGradient(cx - ruleW/2, 0, cx + ruleW/2, 0);
+  grad.addColorStop(0, 'rgba(102,102,102,0)');
+  grad.addColorStop(0.5, 'rgba(102,102,102,1)');
+  grad.addColorStop(1, 'rgba(102,102,102,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(cx - ruleW/2, ruleY, ruleW, 1);
+}
+
+// ============================================================
+//  LÉGENDE
+// ============================================================
+function getLegendItems() {
+  if (mode === 'concurrent') {
+    return [
+      { color: '#ff5555', text: 'P — force concourante en A (axe X)' },
+      { color: '#55aaff', text: 'Q — force concourante en A (axe Y)' },
+      { color: '#ffcc55', text: 'S — force concourante en A (axe Z)' },
+      { color: '#55ff88', text: 'R = P + Q + S — résultante (diagonale AH)' },
+      { color: '#8c8caa', text: 'Parallélépipède rectangle construit sur P, Q, S', note: true }
+    ];
+  } else {
+    return [
+      { color: '#ff5555', text: 'P — appliquée en A (vers +X)' },
+      { color: '#55aaff', text: 'Q — appliquée en B (vers -Y)' },
+      { color: '#ffcc55', text: 'S — appliquée en E (vers +Z)' },
+      { color: '#55ff88', text: 'R = P + Q + S — résultante en A' },
+      { color: '#8c8caa', text: 'Translations en pointillé → composition vectorielle', note: true }
+    ];
+  }
+}
+
+function drawLegendInCanvas() {
+  if (!isRecording || !showLegendInRecording) return;
+
+  const items = getLegendItems();
+  const s = Math.min(W / 1920, H / 1080);
+  const sClamped = Math.max(0.6, Math.min(2.5, s));
+
+  const padding = Math.round(18 * sClamped);
+  const lineHeight = Math.round(30 * sClamped);
+  const dotRadius = Math.round(8 * sClamped);
+  const fontSize = Math.round(18 * sClamped);
+  const noteFontSize = Math.round(16 * sClamped);
+  const textPadding = Math.round(16 * sClamped);
+
+  ctx.save();
+  let maxW = 0;
+  items.forEach(item => {
+    ctx.font = `${item.note ? noteFontSize : fontSize}px Georgia, serif`;
+    const w = ctx.measureText(item.text).width;
+    if (w > maxW) maxW = w;
+  });
+  ctx.restore();
+
+  const panelW = maxW + padding * 2 + dotRadius * 2 + textPadding;
+  const panelH = padding * 2 + items.length * lineHeight;
+  const panelX = (W - panelW) / 2;
+  const panelY = H - panelH - Math.round(30 * sClamped);
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(18, 18, 24, 0.85)';
+  ctx.strokeStyle = 'rgba(90, 90, 110, 0.5)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, panelX, panelY, panelW, panelH, 10 * sClamped);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  items.forEach((item, i) => {
+    const y = panelY + padding + i * lineHeight + lineHeight / 2;
+    const dotX = panelX + padding + dotRadius;
+    const textX = dotX + dotRadius + textPadding;
+
+    ctx.fillStyle = item.color;
+    ctx.beginPath();
+    ctx.arc(dotX, y, dotRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.beginPath();
+    ctx.arc(dotX, y, dotRadius + 4 * sClamped, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.fillStyle = item.note ? '#aaa' : '#ddd';
+    ctx.font = `${item.note ? 'italic ' : ''}${item.note ? noteFontSize : fontSize}px Georgia, serif`;
+    ctx.fillText(item.text, textX, y + 1);
+  });
+}
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ============================================================
+//  BOUCLE PRINCIPALE
+// ============================================================
+function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+function clamp01(x) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  return easeOutCubic(x);
+}
+
+function drawScene(now) {
+  if (animStartTime === null) animStartTime = now;
+  if (!animDone) {
+    const elapsed = now - animStartTime;
+    animProgress = Math.min(elapsed / appearanceDuration, 1);
+    if (animProgress >= 1) animDone = true;
+  }
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  drawFloorGrid();
+
+  if (mode === 'concurrent') drawConcurrent();
+  else drawNonConcurrent();
+
+  // Titre + légende dans le canvas uniquement pendant l'enregistrement
+  if (isRecording) {
+    drawTitleInCanvas();
+    drawLegendInCanvas();
+  }
+
+  requestAnimationFrame(drawScene);
+}
+
+// ============================================================
+//  ROTATION 3D
+// ============================================================
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  canvas.classList.add('dragging');
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  camTheta += dx * 0.008 * rotationSpeed;
+  camPhi   -= dy * 0.008 * rotationSpeed;
+  camPhi = Math.max(PHI_MIN, Math.min(PHI_MAX, camPhi));
+});
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    lastMouseX = e.touches[0].clientX;
+    lastMouseY = e.touches[0].clientY;
+    canvas.classList.add('dragging');
+  }
+}, { passive: true });
+canvas.addEventListener('touchmove', (e) => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - lastMouseX;
+  const dy = e.touches[0].clientY - lastMouseY;
+  lastMouseX = e.touches[0].clientX;
+  lastMouseY = e.touches[0].clientY;
+  camTheta += dx * 0.008 * rotationSpeed;
+  camPhi   -= dy * 0.008 * rotationSpeed;
+  camPhi = Math.max(PHI_MIN, Math.min(PHI_MAX, camPhi));
+}, { passive: true });
+canvas.addEventListener('touchend', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+
+// ============================================================
+//  PANNEAU DRAG & DROP
+// ============================================================
+const panel = document.getElementById('panel');
+const panelHeader = document.getElementById('panelHeader');
+const collapseBtn = document.getElementById('collapseBtn');
+let panelDragging = false;
+let panelOffsetX = 0, panelOffsetY = 0;
+
+panelHeader.addEventListener('mousedown', (e) => {
+  if (e.target === collapseBtn) return;
+  panelDragging = true;
+  const rect = panel.getBoundingClientRect();
+  panelOffsetX = e.clientX - rect.left;
+  panelOffsetY = e.clientY - rect.top;
+  e.stopPropagation();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!panelDragging) return;
+  panel.style.left = (e.clientX - panelOffsetX) + 'px';
+  panel.style.top  = (e.clientY - panelOffsetY) + 'px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+});
+window.addEventListener('mouseup', () => { panelDragging = false; });
+
+panelHeader.addEventListener('touchstart', (e) => {
+  if (e.target === collapseBtn) return;
+  panelDragging = true;
+  const rect = panel.getBoundingClientRect();
+  panelOffsetX = e.touches[0].clientX - rect.left;
+  panelOffsetY = e.touches[0].clientY - rect.top;
+  e.stopPropagation();
+}, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (!panelDragging) return;
+  panel.style.left = (e.touches[0].clientX - panelOffsetX) + 'px';
+  panel.style.top  = (e.touches[0].clientY - panelOffsetY) + 'px';
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+}, { passive: true });
+window.addEventListener('touchend', () => { panelDragging = false; });
+
+collapseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  panel.classList.toggle('collapsed');
+  collapseBtn.textContent = panel.classList.contains('collapsed') ? '+' : '−';
+});
+
+// ============================================================
+//  LÉGENDE HTML DÉPLAÇABLE
+// ============================================================
+const legend = document.getElementById('legend');
+const legendItems = document.getElementById('legendItems');
+let legendDragging = false;
+let legendOffsetX = 0, legendOffsetY = 0;
+
+function updateLegendContent() {
+  legendItems.innerHTML = getLegendItems().map(item =>
+    `<div class="legend-item${item.note ? ' legend-note' : ''}">
+      <span class="legend-dot" style="background:${item.color};"></span>
+      <span>${item.text}</span>
+    </div>`
+  ).join('');
+}
+
+legend.addEventListener('mousedown', (e) => {
+  legendDragging = true;
+  const rect = legend.getBoundingClientRect();
+  legendOffsetX = e.clientX - rect.left;
+  legendOffsetY = e.clientY - rect.top;
+  e.stopPropagation();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!legendDragging) return;
+  legend.style.left = (e.clientX - legendOffsetX) + 'px';
+  legend.style.top  = (e.clientY - legendOffsetY) + 'px';
+  legend.style.right = 'auto';
+  legend.style.bottom = 'auto';
+  legend.style.transform = 'none';
+});
+window.addEventListener('mouseup', () => { legendDragging = false; });
+
+legend.addEventListener('touchstart', (e) => {
+  legendDragging = true;
+  const rect = legend.getBoundingClientRect();
+  legendOffsetX = e.touches[0].clientX - rect.left;
+  legendOffsetY = e.touches[0].clientY - rect.top;
+  e.stopPropagation();
+}, { passive: true });
+window.addEventListener('touchmove', (e) => {
+  if (!legendDragging) return;
+  legend.style.left = (e.touches[0].clientX - legendOffsetX) + 'px';
+  legend.style.top  = (e.touches[0].clientY - legendOffsetY) + 'px';
+  legend.style.right = 'auto';
+  legend.style.bottom = 'auto';
+  legend.style.transform = 'none';
+}, { passive: true });
+window.addEventListener('touchend', () => { legendDragging = false; });
+
+// ============================================================
+//  TITRE HTML
+// ============================================================
+const figCaption = document.getElementById('figCaption');
+const figEquation = document.getElementById('figEquation');
+
+function updateTitleAndEquation() {
+  const t = TITLES[mode];
+  figCaption.textContent = t.title;
+  figEquation.textContent = t.eq;
+}
+
+// ============================================================
+//  CHANGEMENT DE MODE
+// ============================================================
+const modeSelect = document.getElementById('modeSelect');
+
+function setMode(newMode) {
+  if (!MODES.includes(newMode)) return;
+  mode = newMode;
+  modeSelect.value = mode;
+  updateTitleAndEquation();
+  updateLegendContent();
+  resetAnimation();
+}
+
+modeSelect.addEventListener('change', () => setMode(modeSelect.value));
+
+// ============================================================
+//  CONTRÔLES
+// ============================================================
+const durationSlider = document.getElementById('durationSlider');
+const durationValue = document.getElementById('durationValue');
+durationSlider.addEventListener('input', () => {
+  appearanceDuration = parseInt(durationSlider.value);
+  durationValue.textContent = (appearanceDuration / 1000).toFixed(1) + 's';
+});
+
+const rotSpeedSlider = document.getElementById('rotSpeed');
+const rotSpeedValue = document.getElementById('rotSpeedValue');
+rotSpeedSlider.addEventListener('input', () => {
+  rotationSpeed = parseFloat(rotSpeedSlider.value);
+  rotSpeedValue.textContent = rotationSpeed.toFixed(2);
+});
+
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomValue = document.getElementById('zoomValue');
+zoomSlider.addEventListener('input', () => {
+  zoomFactor = parseFloat(zoomSlider.value);
+  zoomValue.textContent = zoomFactor.toFixed(2);
+});
+
+document.getElementById('showTitleRec').addEventListener('change', (e) => { showTitleInRecording = e.target.checked; });
+document.getElementById('showLegendRec').addEventListener('change', (e) => { showLegendInRecording = e.target.checked; });
+
+function resetAnimation() {
+  animStartTime = null;
+  animProgress = 0;
+  animDone = false;
+}
+document.getElementById('replayBtn').addEventListener('click', resetAnimation);
+
+// ============================================================
+//  ENREGISTREMENT VIDÉO
+// ============================================================
+const recordingBtn = document.getElementById('recordingBtn');
+const recordingExit = document.getElementById('recordingExit');
+const recTimeEl = document.getElementById('recTime');
+const resSelect = document.getElementById('resSelect');
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingStartTime = 0;
+let recordingTimerInterval = null;
+let isRecording = false;
+
+let savedW = 0, savedH = 0;
+
+function formatTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `REC ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function pickBestMimeType() {
+  const candidates = [
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4;codecs=h264',
+    'video/mp4'
+  ];
+  for (const c of candidates) {
+    if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+  }
+  return '';
+}
+
+function applyRecordingResolution() {
+  const val = resSelect.value;
+  if (val === 'auto') {
+    recordingResolution = null;
+  } else {
+    const h = parseInt(val);
+    const w = Math.round(h * 16 / 9);
+    recordingResolution = { w, h };
+  }
+}
+
+function startRecording() {
+  if (isRecording) return;
+
+  resetAnimation();
+  applyRecordingResolution();
+
+  savedW = W;
+  savedH = H;
+
+  if (recordingResolution) {
+    W = canvas.width = recordingResolution.w;
+    H = canvas.height = recordingResolution.h;
+    canvas.style.width = savedW + 'px';
+    canvas.style.height = savedH + 'px';
+  }
+
+  isRecording = true;
+  document.body.classList.add('recording');
+
+  const stream = canvas.captureStream(60);
+  const mimeType = pickBestMimeType();
+
+  if (!mimeType) {
+    alert("Votre navigateur ne supporte pas l'enregistrement vidéo via MediaRecorder.");
+    isRecording = false;
+    document.body.classList.remove('recording');
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+    return;
+  }
+
+  let bitrate = 20_000_000;
+  if (recordingResolution && recordingResolution.h >= 2160) bitrate = 60_000_000;
+  else if (recordingResolution && recordingResolution.h >= 1440) bitrate = 35_000_000;
+  else if (recordingResolution && recordingResolution.h >= 1080) bitrate = 20_000_000;
+
+  try {
+    mediaRecorder = new MediaRecorder(stream, {
+      mimeType: mimeType,
+      videoBitsPerSecond: bitrate
+    });
+  } catch (err) {
+    alert("Impossible de démarrer l'enregistrement : " + err.message);
+    isRecording = false;
+    document.body.classList.remove('recording');
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+    return;
+  }
+
+  recordedChunks = [];
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data && e.data.size > 0) recordedChunks.push(e.data);
+  };
+
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(recordedChunks, { type: mimeType.split(';')[0] });
+    const url = URL.createObjectURL(blob);
+
+    const now = new Date();
+    const stamp = now.getFullYear()
+      + String(now.getMonth()+1).padStart(2,'0')
+      + String(now.getDate()).padStart(2,'0') + '_'
+      + String(now.getHours()).padStart(2,'0')
+      + String(now.getMinutes()).padStart(2,'0')
+      + String(now.getSeconds()).padStart(2,'0');
+
+    const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const resTag = recordingResolution ? `${recordingResolution.h}p` : 'auto';
+    const filename = `parallelepipede_${mode}_${resTag}_${stamp}.${ext}`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(url), 15000);
+    recordedChunks = [];
+    mediaRecorder = null;
+
+    W = canvas.width = savedW;
+    H = canvas.height = savedH;
+    canvas.style.width = '';
+    canvas.style.height = '';
+  };
+
+  mediaRecorder.start(100);
+  recordingStartTime = performance.now();
+  recTimeEl.textContent = 'REC 00:00';
+
+  recordingTimerInterval = setInterval(() => {
+    const elapsed = performance.now() - recordingStartTime;
+    recTimeEl.textContent = formatTime(elapsed);
+  }, 200);
+}
+
+function stopRecordingAndDownload() {
+  if (!isRecording) return;
+  isRecording = false;
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (recordingTimerInterval) {
+    clearInterval(recordingTimerInterval);
+    recordingTimerInterval = null;
+  }
+
+  document.body.classList.remove('recording');
+}
+
+recordingBtn.addEventListener('click', startRecording);
+recordingExit.addEventListener('click', stopRecordingAndDownload);
+
+// ============================================================
+//  CLAVIER
+// ============================================================
+window.addEventListener('keydown', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    const idx = MODES.indexOf(mode);
+    const newIdx = e.key === 'ArrowRight'
+      ? (idx + 1) % MODES.length
+      : (idx - 1 + MODES.length) % MODES.length;
+    setMode(MODES[newIdx]);
+    return;
+  }
+
+  if (e.key === ' ') { e.preventDefault(); resetAnimation(); }
+  if (e.key === 'Escape' && isRecording) stopRecordingAndDownload();
+});
+
+// ============================================================
+//  INITIALISATION
+// ============================================================
+updateTitleAndEquation();
+updateLegendContent();
+requestAnimationFrame(drawScene);
+</script>
+</body>
+</html>
