@@ -1,4 +1,4 @@
-# Physique des Lumières
+# Semaine de la Physique 2026 : La Physique des Lumières
 
 **Un parcours structuré à travers les fondements de la physique classique, enrichi de démonstrations interactives en 3D.**
 
