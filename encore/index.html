@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physique des Lumières — Démonstrations Interactives</title>
+    <style>
+        /* ---------- Variables de thème ---------- */
+        :root[data-theme="dark"] {
+            --bg: #0f1115;
+            --surface: #161b22;
+            --text: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-hover: #79c0ff;
+            --border: #30363d;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --code-bg: #0d1117;
+        }
+
+        :root[data-theme="light"] {
+            --bg: #f6f8fa;
+            --surface: #ffffff;
+            --text: #1f2328;
+            --text-secondary: #656d76;
+            --accent: #0969da;
+            --accent-hover: #0550ae;
+            --border: #d0d7de;
+            --shadow: 0 8px 24px rgba(140, 149, 159, 0.2);
+            --code-bg: #f6f8fa;
+        }
+
+        /* ---------- Reset & Base ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* ---------- En-tête ---------- */
+        header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* ---------- Bouton Thème ---------- */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ---------- Cartes de démonstration ---------- */
+        .demo-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .demo-card h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .demo-card h2::before {
+            content: "▹";
+            font-size: 1.2rem;
+        }
+
+        .demo-card p {
+            margin-bottom: 1.25rem;
+            color: var(--text);
+            text-align: justify;
+            hyphens: auto;
+        }
+
+        .demo-card ul {
+            margin: 1rem 0 1.5rem 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .demo-card li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .demo-card li::marker {
+            color: var(--accent);
+        }
+
+        /* ---------- Bouton d'action ---------- */
+        .btn-demo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--accent);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-demo:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-demo svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* ---------- Pied de page ---------- */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        footer strong {
+            color: var(--text);
+            font-style: normal;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 600px) {
+            .demo-card { padding: 1.5rem; }
+            header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="Basculer le thème">
+        <span id="themeIcon">☀️</span>
+        <span id="themeLabel">Clair</span>
+    </button>
+
+    <div class="container">
+        <header>
+            <h1>Physique des Lumières</h1>
+            <p>Démonstrations interactives et visualisations 3D</p>
+        </header>
+
+        <!-- 1. Parallélépipède des forces -->
+        <article class="demo-card">
+            <h2>Mécanique 3D : Le parallélépipède des forces (concourantes et non concourantes)</h2>
+            <p>La composition des forces dans l'espace à trois dimensions est un pilier de la statique et de la mécanique rationnelle. Cette démonstration s'appuie sur les principes de Lagrange pour illustrer visuellement la règle du parallélépipède des forces.</p>
+            <p>L'objectif est de clarifier la différence cruciale entre les forces concourantes (qui se croisent en un même point) et les forces non concourantes. La visualisation en 3D permet de suivre l'apparition des vecteurs et de comprendre comment leur résultante est construite géométriquement, offrant un support idéal pour compléter les démonstrations théoriques des leçons précédentes.</p>
+            
+            <ul>
+                <li>Définition et représentation des forces concourantes dans l'espace</li>
+                <li>Distinction avec les systèmes de forces non concourantes</li>
+                <li>Construction géométrique de la résultante (règle du parallélépipède)</li>
+                <li>Manipulation et rotation des vecteurs pour une compréhension spatiale</li>
+            </ul>
+
+            <a href="https://lombard-web-services.github.io/Physique-des-Lumieres/encore/Lagrange-paralellepipede-des-forces.html" class="btn-demo" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Tester la démo interactive
+            </a>
+        </article>
+
+        <!-- 2. Loi de Coulomb et Gauss -->
+        <article class="demo-card">
+            <h2>Champ électrique et Loi de Gauss : Visualisation du flux en 1/r²</h2>
+            <p>Comprendre la loi en carré inverse (1/r²) est fondamental en électromagnétisme, mais elle reste difficile à appréhender mentalement. Cette simulation 3D a pour but de combler ce fossé en illustrant concrètement le théorème de Gauss et la loi de Coulomb.</p>
+            <p>La vidéo montre comment le flux électrique se répartit dans l'espace autour de différentes configurations de charges. En affichant les sphères de Gauss et le rayonnement, elle démontre visuellement pourquoi le flux à travers une surface fermée dépend uniquement de la charge enfermée, indépendamment de la forme ou de la taille de cette surface.</p>
+            
+            <ul>
+                <li>Champ électrique d'une charge positive ou négative isolée</li>
+                <li>Configuration en dipôle et en doubles charges positives</li>
+                <li>Visualisation des sphères de Gauss et du flux à travers celles-ci</li>
+                <li>Illustration concrète de la décroissance du rayonnement en 1/r²</li>
+            </ul>
+
+            <a href="https://lombard-web-services.github.io/Physique-des-Lumieres/encore/loi-de-Coulomb-Gauss.html" class="btn-demo" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Tester la démo interactive
+            </a>
+        </article>
+
+        <!-- 3. Hydrostatique -->
+        <article class="demo-card">
+            <h2>Hydrostatique : Visualisation interactive des flux, sources et puits</h2>
+            <p>Cette démonstration interactive rend tangible un concept souvent abstrait : le comportement des champs vectoriels en hydrostatique. Plutôt que de se limiter à des équations, cette visualisation permet d'observer en temps réel comment la matière ou le flux se déplace à partir de configurations fondamentales.</p>
+            <p>On y explore la dynamique entre les sources (qui émettent le flux) et les puits (qui l'absorbent), en passant par des assemblages plus complexes comme les dipôles ou les hexapôles. L'animation des lignes de courant et la possibilité de manipuler la vue en 3D offrent une intuition physique immédiate sur la manière dont ces champs s'organisent dans l'espace.</p>
+            
+            <ul>
+                <li>Dynamique des sources et des puits isolés</li>
+                <li>Formation et comportement d'un dipôle hydrostatique</li>
+                <li>Configurations multiples : deux sources, hexapôle et ligne de sources</li>
+                <li>Visualisation animée des lignes de courant et de la densité de flux</li>
+            </ul>
+
+            <a href="https://lombard-web-services.github.io/Physique-des-Lumieres/encore/hydrostatique.html" class="btn-demo" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Tester la démo interactive
+            </a>
+        </article>
+
+        <footer>
+            <p><strong>Thibaut Lombard</strong> vous remercie d'avoir suivi les leçons de la Physique des Lumières.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Gestion du thème clair/sombre
+        const root = document.documentElement;
+        const toggleBtn = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+
+        // Vérifier la préférence système ou enregistrée
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+
+        function applyTheme(theme) {
+            root.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            if (theme === 'dark') {
+                themeIcon.textContent = '☀️';
+                themeLabel.textContent = 'Clair';
+            } else {
+                themeIcon.textContent = '🌙';
+                themeLabel.textContent = 'Sombre';
+            }
+        }
+    </script>
+</body>
+</html>
