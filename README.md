@@ -72,7 +72,7 @@ Les vidéos enregistrées incluent automatiquement le titre, les équations et l
 ## 📄 Licence
 
 Ce projet est distribué sous **Public License**.  
-Vous êtes libre de l'utiliser, de le modifier et de le redistribuer, à condition de conserver la mention de l'auteur original.
+Vous êtes libre de l'utiliser, de le modifier et de le redistribuer, vous pouvez conserver la mention de l'auteur original (c'est bien) sinon vous pouvez aussi l'utiliser dans vos projets sans me citer 🤷.
 
 ---
 
