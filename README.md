@@ -72,7 +72,8 @@ Les vidéos enregistrées incluent automatiquement le titre, les équations et l
 ## 📄 Licence
 
 Ce projet est distribué sous **Public License**.  
-Vous êtes libre de l'utiliser, de le modifier et de le redistribuer, vous pouvez conserver la mention de l'auteur original : Thibaut LOMBARD (c'est bien) sinon vous pouvez aussi l'utiliser dans vos projets sans me citer 🤷.
+
+Vous êtes libre de l'utiliser, de le modifier et de le redistribuer, vous pouvez conserver la mention de l'auteur original : Thibaut LOMBARD (c'est bien) sinon vous pouvez aussi l'utiliser dans vos projets sans me citer 🤷, mais n'envoyez pas de frelons muni de yeux laser, qui me réveillent au milieu de ma période de concentration et  qui permettent de scanner tout mon travail  avant que je le publie en licence ultra permissive.
 
 ---
 
