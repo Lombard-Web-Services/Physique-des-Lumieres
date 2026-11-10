@@ -81,7 +81,7 @@ Vous êtes libre de l'utiliser, de le modifier et de le redistribuer, vous pouve
 
 **Thibaut LOMBARD**  
 Chef de Projet & Ingénieur Machine Learning  
-🔗 [LinkedIn](https://www.linkedin.com/) · 🌐 [Lombard Web Services](https://lombard-web-services.github.io/)
+🔗 [LinkedIn](https://www.linkedin.com/) · 🌐 [Lombard Web Services](https://lombard-web-services.com/)
 
 ---
 
